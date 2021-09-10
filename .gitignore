@@ -6,6 +6,9 @@ __pycache__/
 # API keys
 api-keys
 
+# Responsed data from OZON
+/data/
+
 # C extensions
 *.so
 
