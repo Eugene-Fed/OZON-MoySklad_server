@@ -1,20 +1,13 @@
 import requests
 import json
 
-# -*- coding: utf-8 -*-
-import sys
-#reload(sys)
-import locale
-sys.setdefaultencoding(locale.getpreferredencoding())
-
-
 with open('api-keys/api-keys.json') as f:
-    templates = json.load(f)
+    api_params = json.load(f)['api_ozon'] #выбираем только данные объекта api_ozon
 
-client_id = templates['api_ozon']['client_id']
-api_key = templates['api_ozon']['api_key']
-url_domain = templates['api_ozon']['url_domain']
-url_command = templates['api_ozon']['url_command']
+client_id = api_params['client_id']
+api_key = api_params['api_key']
+url_domain = api_params['url_domain']
+url_command = api_params['url_command']
 
 dir_to = 'asc'
 date_from = '2021-07-13T00:00:00Z' #Z = UTF+0 для того, чтобы смена открывалась/закрывалась в 3 ночи по МСК
@@ -43,5 +36,4 @@ print(data['result'][1]['products'][0]['offer_id'])
 #print(response.headers)
 with open('data/data.json', 'w') as outfile:
     json.dump(data, outfile)
-    print("File Updated")
     print(format_data)
