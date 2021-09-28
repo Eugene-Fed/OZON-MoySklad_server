@@ -3,10 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# API keys
+# API keys, meta, data and other secret info
 api-keys
-
-# Responsed data from OZON
+/meta/
 /data/
 
 # C extensions
