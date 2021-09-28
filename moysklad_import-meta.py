@@ -18,19 +18,20 @@ response_organization = requests.get(url_domain+'/api/remap/1.2/entity/organizat
 print("Статус запроса Юр.лиц: " + str(response_organization.status_code))
 
 response_data = response_organization.json()
-format_data = json.dumps(response_data['rows'][0], indent=4)  # красивый вывод в консоль
+format_data = json.dumps(response_data['rows'][0], indent=4, ensure_ascii=False)  # красивый вывод в консоль
 
 with open('meta/meta_ozon_input.json') as f:
     big_data = json.load(f)
-# big_data['organization']['href'] = response_data['rows'][0]['meta']['href']
-# big_data['organization']['id'] = response_data['rows']['id']
-# big_data['organization']['accountId'] = response_data['rows']['accountId']
 
 # 'rows' --> 'meta' --> 'href'
 # 'rows' --> 'id'
 # 'rows' --> 'accountId'
 
+big_data['organization']['href'] = response_data['rows'][0]['meta']['href']
+big_data['organization']['id'] = response_data['rows'][0]['id']
+big_data['organization']['accountId'] = response_data['rows'][0]['accountId']
+
 with open('meta/meta_ozon_input.json', 'w') as outfile:
     json.dump(big_data, outfile)
-    print(format_data)
-    #print(big_data)
+    # print(format_data)
+    print(big_data)
