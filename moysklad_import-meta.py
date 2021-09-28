@@ -18,36 +18,28 @@ headers = {'Authorization': 'Bearer '+api_key}
 request_body = {}
 
 response_organization = requests.get(url_domain+url_command_organization, headers=headers)  # получаем данные юр. лиц
+print("Статус запроса Юр.лиц: " + str(response_organization.status_code))
+
 response_store = requests.get(url_domain+url_command_store, headers=headers,
                               params='filter=name=OZON_Khorugvino')                # получаем данные склада в Хоругвино
-response_retailStore = requests.get(url_domain+url_command_retailStore, headers=headers)  # получаем данные юр. лиц
-
-print("Статус запроса Юр.лиц: " + str(response_organization.status_code))
 print("Статус запроса Складов: " + str(response_store.status_code))
+
+response_retailStore = requests.get(url_domain+url_command_retailStore, headers=headers)  # получаем данные Точки продаж
 print("Статус запроса Точек продаж: " + str(response_retailStore.status_code))
 
-with open('meta/meta_ozon_input.json') as f:            # открываем файл, чтобы внести в него мета-данные организации
-    big_data = json.load(f)
+with open('meta/ozon_ids.json') as f:            # открываем файл, чтобы внести в него мета-данные организации
+    ozon_ids = json.load(f)
 
-# получаем json из ответа сервера, с полными данными ОРГАНИЗАЦИИ #
-response_data = response_organization.json()
-big_data['accountId'] = response_data['rows'][0]['accountId']       # получаем значение ID пользователя
-big_data['organization']['href'] = response_data['meta']['href']    # получаем URL для апи Организации
-big_data['organization']['id'] = response_data['rows'][0]['id']     # получаем значение ID Организации
+# response_data = response_organization.json()
+# format_data = json.dumps(response_data, indent=4, ensure_ascii=False)  # красивый вывод в консоль
 
-# получаем json из ответа сервера, с полными данными СКЛАДА
-response_data = response_store.json()                                   # ID пользователя уникально для api-ключа
-big_data['store']['href'] = response_data['meta']['href']               # получаем URL для апи Склада
-big_data['store']['id'] = response_data['rows'][0]['id']                # получаем значение ID Склада
+ozon_ids['accountId'] = response_organization.json()['rows'][0]['accountId']        # получаем значение ID пользователя
+ozon_ids['organizationId'] = response_organization.json()['rows'][0]['id']          # получаем значение ID Организации
+ozon_ids['storeId'] = response_store.json()['rows'][0]['id']                        # получаем значение ID Склада
+ozon_ids['retailStoreId'] = response_retailStore.json()['rows'][0]['id']            # получаем значение ID Точки продаж
 
-# получаем json из ответа сервера, с полными данными ТОЧЕК ПРОДАЖ
-response_data = response_retailStore.json()
-format_data = json.dumps(response_data, indent=4, ensure_ascii=False)  # красивый вывод в консоль
-big_data['retailStore']['href'] = response_data['meta']['href']         # получаем URL для апи Точки продаж
-big_data['retailStore']['id'] = response_data['rows'][0]['id']          # получаем значение ID Точки продаж
-
-with open('meta/meta_ozon_input.json', 'w') as outfile:
-    json.dump(big_data, outfile, indent=4, ensure_ascii=False)
-    print(format_data)
-    print('\n\n ### Содержимое meta_ozon_input.json ###')
-    print(json.dumps(big_data, indent=4, ensure_ascii=False))
+with open('meta/ozon_ids.json', 'w') as outfile:
+    json.dump(ozon_ids, outfile, indent=4, ensure_ascii=False)
+    # print(format_data)
+    print('\n\n ### Содержимое ozon_ids.json ###')
+    print(json.dumps(ozon_ids, indent=4, ensure_ascii=False))
