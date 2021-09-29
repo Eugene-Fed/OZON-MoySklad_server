@@ -1,6 +1,7 @@
 # OZON-MoySklad_server
 
-# api-key json structure:
+## api-key json structure:
+'''json
 {
     "api_ozon":
         {
@@ -18,3 +19,4 @@
         }
 
 }
+'''
