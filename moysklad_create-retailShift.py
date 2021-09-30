@@ -4,15 +4,24 @@ import json
 with open('api-keys/api-keys.json') as f:               # Закрытый от индекса файл с ключами API и командами запросов
     api_params = json.load(f)['api_moysklad']
 
-api_key = api_params['api_key']                                     # Получаем из файла api-ключ moysklad
-api_domain = api_params['url_domain']                               # Получаем домен для работы с API
-api_command = api_params['url_api']
-id_organization = api_params['organisation']['id']                  # Получаем ID Юр. лица
-id_store = api_params['store']['id']                                # Получаем ID Склада
-id_retailStore = api_params['retailStore']['id']                    # Получаем ID Точки продаж
+api_key = api_params['api_key']                                 # Получаем ключ API MoySklad
+api_domain = api_params['api_domain']                           # Получаем домен API
+api_url = api_params['api_url']                                 # Получаем основной путь для работы с API
 
-# Формируем команду для работы с Параметрами
-api_com_retailShift = api_params['url_api'] + api_params['retailShift']['url_command']      # Розничная смена
+api_name_organization = api_params['organisation']['name']      # Имя бъекта, для добавление в URL запроса Организации
+api_name_store = api_params['store']['name']                    # Имя бъекта, для добавление в URL запроса Склада
+api_name_retailStore = api_params['retailStore']['name']        # Имя бъекта, для добавление в URL запроса Точки продаж
+api_name_retailShift = api_params['retailShift']['name']        # Имя бъекта, для добавление в URL запроса Розн. смены
+
+id_organization = api_params['organisation']['id']              # Получаем ID Юр. лица
+id_store = api_params['store']['id']                            # Получаем ID Склада
+id_retailStore = api_params['retailStore']['id']                # Получаем ID Точки продаж
+
+# Формируем URLы для отправки JSON на сервер
+api_com_organisation = api_domain + api_url + api_name_organization         # Команда для работы с Организацией
+api_com_store = api_domain + api_url + api_name_store                       # Команда для работы со Складом
+api_com_retailStore = api_domain + api_url + api_name_retailStore           # Команда для работы с точкой продаж
+api_com_retailShift = api_domain + api_url + api_name_retailShift           # Розничная смена
 
 headers = {'Authorization': 'Basic '+api_key, 'Content-Type': 'application/json'}
 request_body = {}
