@@ -10,7 +10,7 @@ with open('api-keys/api-keys.json') as f:           # Закрытый от ин
 api_key = api_params['api_key']                                 # Получаем ключ API MoySklad
 api_domain = api_params['api_domain']                           # Получаем домен API
 api_url = api_params['api_url']                                 # Получаем основной путь для работы с API
-api_name_organization = api_params['organisation']['name']      # Имя бъекта, для добавление в URL запроса Организации
+api_name_organization = api_params['organization']['name']      # Имя бъекта, для добавление в URL запроса Организации
 api_name_store = api_params['store']['name']                    # Имя бъекта, для добавление в URL запроса Склада
 api_name_retailStore = api_params['retailStore']['name']        # Имя бъекта, для добавление в URL запроса Точки продаж
 
