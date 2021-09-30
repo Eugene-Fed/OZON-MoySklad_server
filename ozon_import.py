@@ -6,7 +6,7 @@ with open('api-keys/api-keys.json') as f:
 
 client_id = api_params['client_id']
 api_key = api_params['api_key']
-url_domain = api_params['url_domain']
+url_domain = api_params['api_domain']
 url_command = api_params['url_command']
 
 dir_to = 'asc'

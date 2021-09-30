@@ -1,33 +1,33 @@
 import requests
 import json
 
-with open('api-keys/api-keys.json') as f:
+with open('api-keys/api-keys.json') as f:               # Закрытый от индекса файл с ключами API и командами запросов
     api_params = json.load(f)['api_moysklad']
 
-api_key = api_params['api_key']
-url_domain = api_params['url_domain']
-url_command_organization = '/api/remap/1.2/entity/organization'     # мета-данные организации (юр. лица)
-url_command_store = '/api/remap/1.2/entity/store'                   # мета-данные склада
-url_command_retailStore = '/api/remap/1.2/entity/retailstore'       # мета-данные точки продаж
-url_command_retailShift = '/api/remap/1.2/entity/retailshift/'      # мета-данные смены
+api_key = api_params['api_key']                                     # Получаем из файла api-ключ moysklad
+api_domain = api_params['url_domain']                               # Получаем домен для работы с API
+api_command = api_params['url_api']
+id_organization = api_params['organisation']['id']                  # Получаем ID Юр. лица
+id_store = api_params['store']['id']                                # Получаем ID Склада
+id_retailStore = api_params['retailStore']['id']                    # Получаем ID Точки продаж
 
-# filter_ = {'since':date_from, 'status':status, 'to':date_to}
-# with_ = {'analytics_data':analytics_data, 'financial_data':financial_data}
+# Формируем команду для работы с Параметрами
+api_com_retailShift = api_params['url_api'] + api_params['retailShift']['url_command']      # Розничная смена
 
-headers = {'Authorization': 'Bearer '+api_key}
+headers = {'Authorization': 'Basic '+api_key, 'Content-Type': 'application/json'}
 request_body = {}
 
-response_organization = requests.get(url_domain+url_command_organization, headers=headers)  # получаем данные юр. лиц
+response_organization = requests.get(api_domain + url_command_organization, headers=headers)  # получаем данные юр. лиц
 print("Статус запроса Юр.лиц: " + str(response_organization.status_code))
 
-response_store = requests.get(url_domain+url_command_store, headers=headers,
+response_store = requests.get(api_domain + url_command_store, headers=headers,
                               params='filter=name=OZON_Khorugvino')                # получаем данные склада в Хоругвино
 print("Статус запроса Складов: " + str(response_store.status_code))
 
-response_retailStore = requests.get(url_domain+url_command_retailStore, headers=headers)  # получаем данные Точки продаж
+response_retailStore = requests.get(api_domain + url_command_retailStore, headers=headers)  # получаем данные Точки продаж
 print("Статус запроса Точек продаж: " + str(response_retailStore.status_code))
 
-response_retailShift = requests.get(url_domain+url_command_retailShift, headers=headers)  # получаем данные Точки продаж
+response_retailShift = requests.get(api_domain + api_com_retailShift, headers=headers)  # получаем данные Точки продаж
 print("Статус запроса Розничных смен: " + str(response_retailShift.status_code))
 
 with open('meta/moysklad_ids.json') as f:            # открываем файл, чтобы внести в него мета-данные организации
