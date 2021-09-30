@@ -8,7 +8,7 @@ with open('api-keys/api-keys.json') as f:
 
 # client_id = api_params['api_ozon']['client_id']
 api_key = api_params['api_key']
-url_domain = api_params['url_domain']
+url_domain = api_params['api_domain']
 # url_command = api_params['url_command']
 url_command = '/api/remap/1.2/entity/retaildemand'
 meta_href = '/api/remap/1.2/entity/retailshift'
