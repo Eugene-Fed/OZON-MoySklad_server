@@ -24,18 +24,33 @@ api_com_retailStore = api_domain + api_url + api_name_retailStore           # К
 api_com_retailShift = api_domain + api_url + api_name_retailShift           # Розничная смена
 
 # Формируем заголовок и тело запроса на создание розничной смены
-headers = {'Authorization': 'Basic '+api_key, 'Content-Type': 'application/json'}
+# headers = {'Authorization': 'Basic '+api_key, 'Content-Type': 'application/json'}   # Заголовок запроса
+headers = {'Authorization': api_key, 'Content-Type': 'application/json'}   # Заголовок запроса
+
+# Тело запроса
 with open('data/retailShift_create.json') as f:           # Файл со структурой тела запроса на создание розничной смены
     request_body = json.load(f)
-
 request_body['organization']['meta']['href'] = api_com_organization + '/' + id_organization
-
+request_body['organization']['meta']['metadataHref'] = api_com_organization + '/metadata'
+request_body['store']['meta']['href'] = api_com_store + '/' + id_store
+request_body['store']['meta']['metadataHref'] = api_com_store + '/metadata'
+request_body['retailStore']['meta']['href'] = api_com_retailStore + '/' + id_retailStore
+request_body['retailStore']['meta']['metadataHref'] = api_com_retailStore + '/metadata'
 
 print(json.dumps(request_body, indent=4, ensure_ascii=False))
 
-# response_store = requests.get(api_domain + url_command_store, headers=headers,
-#                               params='filter=name=OZON_Khorugvino')                # получаем данные склада в Хоругвино
-# print("Статус запроса Складов: " + str(response_store.status_code))
+# Открываем смену
+response_retailShift = requests.post(api_com_retailShift, headers=headers, json=request_body)
+print("Статус запроса на создание смены: " + str(response_retailShift.status_code))  # Вывод статуса запроса
+retailShift_ID = response_retailShift.json()['id']                      # ID открытой смены
+retailShift_name = response_retailShift.json()['name']                  # Имя открытой смены
+retailShift_time_created = response_retailShift.json()['created']         # Время открытия смены
+
+# Дебажный вывод в консоль
+print("\nРозничная смена открыта, даные смены таковы:\n" +
+      json.dumps(response_retailShift.json(), indent=4, ensure_ascii=False))
+print('ID открытой смены: ' + retailShift_ID + '\nИмя розничной смены: ' + retailShift_name +
+      '\nСмена открыта в: ' + retailShift_time_created)
 
 # with open('meta/moysklad_ids.json', 'w') as outfile:
 #     json.dump(ozon_ids, outfile, indent=4, ensure_ascii=False)
