@@ -1,8 +1,6 @@
 import requests
 import json
 
-# ЭТО ПОЛНАЯ КОПИПАСТА MOYSKLAD_IMPORT-ID!!!!! ИЗМЕНИТЬ!
-
 with open('api-keys/api-keys.json') as f:
     api_params = json.load(f)['api_moysklad']
 
