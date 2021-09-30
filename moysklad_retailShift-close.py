@@ -18,43 +18,26 @@ id_store = api_params['store']['id']                            # Получае
 id_retailStore = api_params['retailStore']['id']                # Получаем ID Точки продаж
 
 # Формируем URLы для отправки JSON на сервер
-# api_com_organization = api_domain + api_url + api_name_organization         # Команда для работы с Организацией
-# api_com_store = api_domain + api_url + api_name_store                       # Команда для работы со Складом
-# api_com_retailStore = api_domain + api_url + api_name_retailStore           # Команда для работы с точкой продаж
 api_com_retailShift = api_domain + api_url + api_name_retailShift           # Розничная смена
 
 # Формируем заголовок и тело запроса на создание розничной смены
 # headers = {'Authorization': 'Basic '+api_key, 'Content-Type': 'application/json'}   # Заголовок запроса
 headers = {'Authorization': api_key}   # Заголовок запроса
 
-# Тело запроса
-# with open('data/retailShift_create.json') as f:          # Файл со структурой тела запроса на создание розничной смены
-#     request_body = json.load(f)
-# request_body['organization']['meta']['href'] = api_com_organization + '/' + id_organization
-# request_body['organization']['meta']['metadataHref'] = api_com_organization + '/metadata'
-# request_body['store']['meta']['href'] = api_com_store + '/' + id_store
-# request_body['store']['meta']['metadataHref'] = api_com_store + '/metadata'
-# request_body['retailStore']['meta']['href'] = api_com_retailStore + '/' + id_retailStore
-# request_body['retailStore']['meta']['metadataHref'] = api_com_retailStore + '/metadata'
-#
-# print(json.dumps(request_body, indent=4, ensure_ascii=False))
-
 # Получаем список открытых розничных смен
 response_retailShift = requests.get(api_com_retailShift, headers=headers)
-retailShift_ids = response_retailShift.json()['rows']
+retailShifts_list = response_retailShift.json()['rows']
 print("Статус запроса на создание смены: " + str(response_retailShift.status_code))  # Вывод статуса запроса
-# retailShift_ID = response_retailShift.json()['id']                      # ID открытой смены
-# retailShift_name = response_retailShift.json()['name']                  # Имя открытой смены
-# retailShift_time_created = response_retailShift.json()['created']         # Время открытия смены
 
-# Дебажный вывод в консоль
-for element in retailShift_ids:
-    print('ID Смены: ' + element['id'])
+retailShifts_meta = []                             # Список открытых смен
+for element in retailShifts_list:                   # Проходим по списку открытых смен из респонса
+    # print('Название смены: ' + element['name'])
+    # print('ID Смены: ' + element['id'])
+    retailShifts_element = {'name': element['name'], 'id': element['id']}   # Создаем объект, содержащие мета смены
+    retailShifts_meta.append(retailShifts_element)                          # Добавляем объект с мета в список смен
 
-print("\nРозничные смены получены:\n" + json.dumps(retailShift_ids[0], indent=4, ensure_ascii=False))
-
-# with open('meta/moysklad_ids.json', 'w') as outfile:
-#     json.dump(ozon_ids, outfile, indent=4, ensure_ascii=False)
-#     print(format_data)
-#     print('\n\n ### Содержимое moysklad_ids.json ###')
-#     print(json.dumps(ozon_ids, indent=4, ensure_ascii=False))
+# print("\nРозничные смены получены:\n" + json.dumps(response_retailShift.json(), indent=4, ensure_ascii=False))
+with open('data/retailShifts.json', 'w') as outfile:
+    json.dump({'retailShifts': retailShifts_meta}, outfile, indent=4, ensure_ascii=False) # запись данных смен в файл
+    print('\n\n ### Содержимое retailShifts.json ###')
+    print(json.dumps(retailShifts_meta, indent=4, ensure_ascii=False))
