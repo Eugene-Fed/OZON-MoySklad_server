@@ -1,0 +1,26 @@
+{
+"organization": {
+    "meta": {
+        "href": "_api_domain_/_api_command_/organization/_organisation_id_",
+        "metadataHref": "_api_domain_/_api_command_/organization/metadata",
+        "type": "organization",
+        "mediaType": "application/json"
+      }
+},
+"store": {
+    "meta": {
+        "href": "_api_domain_/_api_command_/store/_store_id_",
+        "metadataHref": "_api_domain_/_api_command_/store/metadata",
+        "type": "store",
+        "mediaType": "application/json"
+    }
+},
+"retailStore": {
+     "meta": {
+         "href": "_api_domain_/_api_command_/retailstore/_retailStore_id_",
+         "metadataHref": "_api_domain_/_api_command_/retailstore/metadata",
+         "type": "retailstore",
+         "mediaType": "application/json"
+      }
+}
+}

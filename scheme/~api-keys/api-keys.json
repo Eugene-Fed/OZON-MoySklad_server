@@ -1,0 +1,41 @@
+{
+    "api_ozon":
+        {
+        "client_id": "number",
+        "api_key": "key",
+        "url_domain": "domain",
+        "url_command": "url"
+        },
+    "api_moysklad":
+        {
+        "api_key": "key",
+        "api_domain": "domain",
+        "api_url": "url",
+        "account":
+            {
+            "id": "key",
+            "name": "employee"
+            },
+        "organization":
+            {
+            "id": "key",
+            "name": "organization"
+            },
+        "store":
+            {
+            "id": "key",
+            "name": "store"
+            },
+        "retailStore":
+            {
+            "id": "key",
+            "name": "retailstore"
+            },
+        "retailShift":
+            {
+            "id": "",
+            "name": "retailshift"
+            }
+        }
+
+}
