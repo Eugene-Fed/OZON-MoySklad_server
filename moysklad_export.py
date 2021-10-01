@@ -9,6 +9,11 @@ api_key = api_params['api_key']                                 # Получае
 api_domain = api_params['api_domain']                           # Получаем домен API
 api_url = api_params['api_url']                                 # Получаем основной путь для работы с API
 
+with open('data/retailShifts.json') as f:                            # Открываем файл с открытыми сменами МойСклад
+    moysklad_retailShifts = json.load(f)
+print('Список открытых смен:')
+print(json.dumps(moysklad_retailShifts, indent=2, ensure_ascii=False))
+
 with open('data/ozon_orders.json') as f:                        # Открываем файл с заказами ОЗОН за все время
     ozon_orders = json.load(f)
 
@@ -38,10 +43,9 @@ headers = {'Authorization': 'Bearer ' + api_key}
 #                    'translit':translit, 'with':with_}
 request_body = {}
 
-response = requests.post(api_domain + api_url + 'retaildemand', headers=headers, json=request_body)
-data = response.json()
-
-print(response.status_code)
+# response = requests.post(api_domain + api_url + 'retaildemand', headers=headers, json=request_body)
+# data = response.json()
+# print(response.status_code)
 
 # print(data)
 

@@ -52,8 +52,3 @@ print("\nРозничная смена открыта, даные смены т�
 print('ID открытой смены: ' + retailShift_ID + '\nИмя розничной смены: ' + retailShift_name +
       '\nСмена открыта в: ' + retailShift_time_created)
 
-# with open('meta/moysklad_ids.json', 'w') as outfile:
-#     json.dump(ozon_ids, outfile, indent=4, ensure_ascii=False)
-#     print(format_data)
-#     print('\n\n ### Содержимое moysklad_ids.json ###')
-#     print(json.dumps(ozon_ids, indent=4, ensure_ascii=False))
