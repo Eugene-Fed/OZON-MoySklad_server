@@ -23,7 +23,7 @@ filter_ = {'since': date_from, 'status': status, 'to': date_to}
 with_ = {'analytics_data': analytics_data, 'financial_data': financial_data}
 
 headers = {'Client-Id': client_id, 'Api-Key': api_key}
-request_body = {'dir': dir_to, 'filter': filter_, 'limit': limit, 'offset': offset,\
+request_body = {'dir': dir_to, 'filter': filter_, 'limit': limit, 'offset': offset,
                     'translit': translit, 'with': with_}
 
 response = requests.post(url_domain+url_command, headers=headers, json=request_body)
