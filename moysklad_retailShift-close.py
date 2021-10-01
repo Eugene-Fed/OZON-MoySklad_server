@@ -38,6 +38,6 @@ for element in retailShifts_list:                   # Проходим по сп
 
 # print("\nРозничные смены получены:\n" + json.dumps(response_retailShift.json(), indent=4, ensure_ascii=False))
 with open('data/retailShifts.json', 'w') as outfile:
-    json.dump({'retailShifts': retailShifts_meta}, outfile, indent=4, ensure_ascii=False) # запись данных смен в файл
+    json.dump({'retailShifts': retailShifts_meta}, outfile, indent=4, ensure_ascii=False)   # запись данных смен в файл
     print('\n\n ### Содержимое retailShifts.json ###')
     print(json.dumps(retailShifts_meta, indent=4, ensure_ascii=False))
