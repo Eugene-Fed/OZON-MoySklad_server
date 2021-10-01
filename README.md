@@ -17,6 +17,12 @@
 - response['result'][0]['financial_data']['products'][0]['commission_amount'] - **Комиссия с продажи товара (в руб.)**
 - response['result'][0]['financial_data']['products'][0]['item_services']{нужно забрать все значения из словаря} - **Списания ОЗОН за логистику** и т.п. (в минус руб.)
 
+### Доступные статусы заказа OZON
+- delivered
+- cancelled
+- delivering
+- awaiting_deliver
+- awaiting_packaging
 
 ### Задачи
 - [x] Открыть смену и получить ее ID и имя (порядковый номер)
