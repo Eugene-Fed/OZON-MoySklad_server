@@ -21,7 +21,7 @@ date_to = date_today + 'T00:00:00Z'                         # Добавляем
 
 dir_to = 'asc'                      # Порядок сортировки: asc - по возрастанию, desc - по убыванию
 status = 'delivered'                # delivered, cancelled, delivering, awaiting_deliver, awaiting_packaging *не обязат.
-limit = 1                        # Макс. количество выгружаемых заказов от 1 до 1000
+limit = 3                        # Макс. количество выгружаемых заказов от 1 до 1000
 offset = 0                          # Кол-во пропускаемых элементов. Если offset = 10, то ответ начнется с 11 заказа
 translit = True                     # True, если включена транслитерация адреса из кириллицы в латиницу
 analytics_data = False              # Не включать данные аналитики в ответ

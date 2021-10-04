@@ -10,6 +10,7 @@ api_domain = api_params['api_domain']                           # Получае
 api_url = api_params['api_url']                                 # Получаем основной путь для работы с API
 api_name_product = api_params['product']['name']                # Имя бъекта, для добавление в URL запроса Товара
 api_name_retailShift = api_params['retailShift']['name']        # Имя бъекта, для добавление в URL запроса Розн. смены
+api_name_retailDemand = api_params['retailDemand']['name']      # Имя бъекта, для добавление в URL запроса Розн. продажи
 
 headers = {'Authorization': 'Bearer ' + api_key}
 
@@ -44,7 +45,7 @@ with open('data/ozon_orders.json') as f:                        # Открыва
 with open('data/retailDemand_create.json') as f:                       # Файл с шаблоном заказа для выгрузки в МойСклад
     moysklad_retailDemand = json.load(f)
 
-moysklad_retailDemand['retailShift']['meta']['href'] = api_domain + api_url + api_name_retailShift +\
+moysklad_retailDemand['retailShift']['meta']['href'] = api_domain + api_url + api_name_retailShift + '/' +\
                                                        retailShift_create_id
 
 # Создаем переменную формата ДатаВремя со значением 1 минута для того, чтобы в цикле выгрузки заказов озон
@@ -62,9 +63,11 @@ order_date = datetime.strptime(retailShift_create_date, "%Y-%m-%d %H:%M:%S.%f") 
 for order in ozon_orders['result']:
     order_date += increase_time                # Время заказа = +1 минута к созданию смены и созданию предыдущего заказа
     order_date_export = datetime.strftime(order_date, "%Y-%m-%d %H:%M:%S")  # Строка с датой/временем заказа для МойСкад
-    moysklad_retailDemand['moment'] = order_date_export         # Дата и время создания заказа на ОЗОН
-    moysklad_retailDemand['name'] = order['order_number']       # Наименование заказа
-    moysklad_retailDemand['code'] = order['order_id']           # Номер заказа
+    moysklad_retailDemand['moment'] = order_date_export                 # Дата и время создания заказа на ОЗОН
+    moysklad_retailDemand['name'] = str(order['order_number'])          # Номер заказа - строка
+    moysklad_retailDemand['code'] = str(order['order_id'])              # Код заказа - строка
+
+    product_quantity = 0  # TODO костыль, т.к. есть два разных поля quantity, одно в products, другое - в financial_data
 
     for product in order['products']:   # проходим по циклу список продуктов с основными данными
         # TODO В этом цикле нужно сформировать список всех мета-id товаров в заказе, чтобы далее передать его в заказ
@@ -73,6 +76,7 @@ for order in ozon_orders['result']:
         # Находим общую стоимость заказа как сумму всех тваров в заказе, умноженную на их количество, т.к. ОЗОН
         # не передает ИТОГ отдельным полем - только по артикульно.
         moysklad_retailDemand['sum'] += float(product['price']) * int(product['quantity'])
+        product_quantity = int(product['quantity'])     # TODO - временный костыль, разобраться с количеством корректнее
         # Вычисляем накладные расходы, чтобы добавить о них инфо для каждого отдельного товара
 
     for product in order['financial_data']['products']:     # проходим по циклу второй список продуктов с доп. данными
@@ -82,16 +86,21 @@ for order in ozon_orders['result']:
             total_cost += -float(product['item_services'][key])
 
         moysklad_retailDemand['positions'].append({
-            'quantity': product['quantity'], 'price': float(product['price']), 'assortment': {
-                'meta': {"href": api_domain+api_url+api_name_product+product_id,
+            'quantity': product_quantity, 'price': float(product['price']), 'assortment': {  # todo - quantity пофиксить
+                'meta': {"href": api_domain+api_url+api_name_product+'/'+product_id,
                          'type': api_name_product,
                          "mediaType": "application/json"}
             }, 'cost': total_cost
         })
 
     moysklad_retailDemand['payedSum'] = moysklad_retailDemand['sum']  # Пока не разобрался для чего поле, поэтому так
-    
     print(json.dumps(moysklad_retailDemand, indent=2, ensure_ascii=False))
+
+    response_retailDemand = requests.post(api_domain + api_url + api_name_retailDemand, headers=headers,
+                                    json=moysklad_retailDemand)
+    print("Статус создания Розничной Продажи: " + str(response_retailDemand.status_code))
+    print('Ответ сервера МойСклад:')
+    print(json.dumps(response_retailDemand.json(), indent=2, ensure_ascii=False))
 
 
 # МойСклад не принимает формат ДатаВремя с конечным Z, поэтому убираем его перед отправкой запроса
