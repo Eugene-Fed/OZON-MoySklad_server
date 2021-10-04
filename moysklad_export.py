@@ -21,16 +21,11 @@ with open('data/product-id_corr-table.json') as f:
 # TODO Использовать файл data/product_id-corr_table.json для того, чтобы заменить Код товара МойСклад на артикулы ОЗОН,
 # TODO в случае, если эти артикулы соответствуют ШК Вайлдберриз
 def ozon_moysklad_id_converter(ozon_product_code):
-    moysklad_product_code = product_id_table[ozon_product_code]
+    moysklad_product_code = product_id_table[ozon_product_code]     # сопоставляем код МойСклад с артикулом ОЗОН
     response_product = requests.get(api_domain + api_url + api_name_product, headers=headers,
                                     params='filter=code=' + moysklad_product_code)
-    print("Статус запроса Мета Товара: " + str(response_product.status_code))
-    print(json.dumps(response_product.json(), indent=4, ensure_ascii=False))
-    # moysklad_product_id = response_product.json()['attributes'][0]['id']   # Получаем мета-id первого товара из списка
-    # print("Статус запроса Мета Товара: " + str(response_product.status_code) + ', Артикул: ' + ozon_product_code +
-    #       ' соответствует MoySklad ID: ' + moysklad_product_id)
-    # return moysklad_product_id
-    return ozon_product_code
+    print("Статус запроса данных Товара: " + str(response_product.status_code))
+    return response_product.json()['rows'][0]['id']     # Получаем ID варианта товара
 
 
 with open('data/retailShifts.json') as f:                       # Файл с открытыми сменами МойСклад
