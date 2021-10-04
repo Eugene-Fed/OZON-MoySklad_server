@@ -12,18 +12,25 @@ api_name_product = api_params['product']['name']                # Имя бъе�
 
 headers = {'Authorization': 'Bearer ' + api_key}
 
+# Для сопоставления артикула товара ОЗОН с кодом товара в МойСклад необходимо использовать таблицу соответствий
+with open('data/product-id_corr-table.json') as f:
+    product_id_table = json.load(f)['ozon-to-moysklad']     # Таблица соответствия артикула ОЗОН с кодом товара МС
+
 
 # Функция для определения meta-идентификатора товара в МойСклад по его артикулу из ОЗОН
-def ozon_moysklad_id_converter(vendor_code):
-    response_product = requests.get(api_domain + api_url + api_name_product + '/metadata', headers=headers,
-                                    params='filter=article~'+vendor_code[:5])
+# TODO Использовать файл data/product_id-corr_table.json для того, чтобы заменить Код товара МойСклад на артикулы ОЗОН,
+# TODO в случае, если эти артикулы соответствуют ШК Вайлдберриз
+def ozon_moysklad_id_converter(ozon_product_code):
+    moysklad_product_code = product_id_table[ozon_product_code]
+    response_product = requests.get(api_domain + api_url + api_name_product, headers=headers,
+                                    params='filter=code=' + moysklad_product_code)
     print("Статус запроса Мета Товара: " + str(response_product.status_code))
     print(json.dumps(response_product.json(), indent=4, ensure_ascii=False))
     # moysklad_product_id = response_product.json()['attributes'][0]['id']   # Получаем мета-id первого товара из списка
-    # print("Статус запроса Мета Товара: " + str(response_product.status_code) + ', Артикул: ' + vendor_code +
+    # print("Статус запроса Мета Товара: " + str(response_product.status_code) + ', Артикул: ' + ozon_product_code +
     #       ' соответствует MoySklad ID: ' + moysklad_product_id)
     # return moysklad_product_id
-    return vendor_code
+    return ozon_product_code
 
 
 with open('data/retailShifts.json') as f:                       # Файл с открытыми сменами МойСклад
