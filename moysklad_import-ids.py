@@ -15,7 +15,7 @@ api_name_store = api_params['store']['name']                    # Имя бъе�
 api_name_retailStore = api_params['retailStore']['name']        # Имя бъекта, для добавление в URL запроса Точки продаж
 
 headers = {'Authorization': 'Bearer '+api_key}
-request_body = {}
+request_body = {}   # Не используется в этом скрипте
 
 # получаем данные Юр.лица / Организации
 response_organization = requests.get(api_domain + api_url + api_name_organization, headers=headers)
