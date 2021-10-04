@@ -9,6 +9,7 @@ api_key = api_params['api_key']                                 # Получае
 api_domain = api_params['api_domain']                           # Получаем домен API
 api_url = api_params['api_url']                                 # Получаем основной путь для работы с API
 api_name_product = api_params['product']['name']                # Имя бъекта, для добавление в URL запроса Товара
+api_name_retailShift = api_params['retailShift']['name']        # Имя бъекта, для добавление в URL запроса Розн. смены
 
 headers = {'Authorization': 'Bearer ' + api_key}
 
@@ -32,12 +33,19 @@ with open('data/retailShifts.json') as f:                       # Файл с о
     moysklad_retailShifts = json.load(f)
 
 retailShift_create_date = moysklad_retailShifts['retailShifts'][0]['created']      # ДатаВремя создания смены в МойСклад
+retailShift_create_id = moysklad_retailShifts['retailShifts'][0]['id']             # ID смены в МойСклад
 
 print('Список открытых смен:')
 print(json.dumps(moysklad_retailShifts, indent=2, ensure_ascii=False))
 
 with open('data/ozon_orders.json') as f:                        # Открываем файл с заказами ОЗОН за все время
     ozon_orders = json.load(f)
+
+with open('data/retailDemand_create.json') as f:                       # Файл с шаблоном заказа для выгрузки в МойСклад
+    moysklad_retailDemand = json.load(f)
+
+moysklad_retailDemand['retailShift']['meta']['href'] = api_domain + api_url + api_name_retailShift +\
+                                                       retailShift_create_id
 
 # Создаем переменную формата ДатаВремя со значением 1 минута для того, чтобы в цикле выгрузки заказов озон
 # в смену МойСклад, каждый следующий заказ приходил на 1 минуту позже, чем предыдущий, начиная с момента открытия смены
@@ -49,18 +57,42 @@ increase_time = timedelta(minutes=1)
 # order_date - "виртуальное" время заказа. Время первого заказа считается от времени открытия смены.
 order_date = datetime.strptime(retailShift_create_date, "%Y-%m-%d %H:%M:%S.%f")  # Преобразуем строку в ДатаВремя
 
-# TODO Для начала выгрузить только товары со статусом 'delivered', чтобы не получить неоправданную выручку в МойСклад
+# TODO Для начала выгрузить только товары со статусом 'delivered', чтобы не получить завышенную выручку в МойСклад
 # TODO далее сверять заказы с учетом статусов и изменять их при необходимости.
 for order in ozon_orders['result']:
     order_date += increase_time                # Время заказа = +1 минута к созданию смены и созданию предыдущего заказа
     order_date_export = datetime.strftime(order_date, "%Y-%m-%d %H:%M:%S")  # Строка с датой/временем заказа для МойСкад
+    moysklad_retailDemand['moment'] = order_date_export         # Дата и время создания заказа на ОЗОН
+    moysklad_retailDemand['name'] = order['order_number']       # Наименование заказа
+    moysklad_retailDemand['code'] = order['order_id']           # Номер заказа
 
-    for product in order['products']:
+    for product in order['products']:   # проходим по циклу список продуктов с основными данными
         # TODO В этом цикле нужно сформировать список всех мета-id товаров в заказе, чтобы далее передать его в заказ
-        product_id = ozon_moysklad_id_converter(product['offer_id'])    # получаем мета-id МойСклад по Артикулу товара
-        print(str(order['order_id']) + ': ' + order_date_export + ', Status: ' + order['status'] + ', Order Name: ' +
-              order['order_number'] + ', Артикул: ' + product['offer_id'], 'ID товара: ' + product_id)
-# order_date_export = datetime.fromisoformat(order_date[:-1])  # преобразуем в формата даты/времени, убирая конечный Z
+        product_id = ozon_moysklad_id_converter(product['offer_id'])  # получаем id товара МойСклад по Арт. товара ОЗОН
+
+        # Находим общую стоимость заказа как сумму всех тваров в заказе, умноженную на их количество, т.к. ОЗОН
+        # не передает ИТОГ отдельным полем - только по артикульно.
+        moysklad_retailDemand['sum'] += float(product['price']) * int(product['quantity'])
+        # Вычисляем накладные расходы, чтобы добавить о них инфо для каждого отдельного товара
+
+    for product in order['financial_data']['products']:     # проходим по циклу второй список продуктов с доп. данными
+        total_cost = float(product['commission_amount'])       # приравниваем общим расходам по товару размер комиссии
+        for key in product['item_services']:
+            # Добавляем к комиссии прочие расходы, которые передаются ОЗОН с отриц. знач.
+            total_cost += -float(product['item_services'][key])
+
+        moysklad_retailDemand['positions'].append({
+            'quantity': product['quantity'], 'price': float(product['price']), 'assortment': {
+                'meta': {"href": api_domain+api_url+api_name_product+product_id,
+                         'type': api_name_product,
+                         "mediaType": "application/json"}
+            }, 'cost': total_cost
+        })
+
+    moysklad_retailDemand['payedSum'] = moysklad_retailDemand['sum']  # Пока не разобрался для чего поле, поэтому так
+    
+    print(json.dumps(moysklad_retailDemand, indent=2, ensure_ascii=False))
+
 
 # МойСклад не принимает формат ДатаВремя с конечным Z, поэтому убираем его перед отправкой запроса
 # Надо иметь ввиду, что в МойСклад нельзя отправит заказ с датой раньше, чем дата открытия смены,
