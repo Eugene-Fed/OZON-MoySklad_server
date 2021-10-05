@@ -21,11 +21,11 @@ date_to = date_today + 'T00:00:00Z'                         # Добавляем
 
 dir_to = 'asc'                      # Порядок сортировки: asc - по возрастанию, desc - по убыванию
 status = 'delivered'                # delivered, cancelled, delivering, awaiting_deliver, awaiting_packaging *не обязат.
-limit = 3                        # Макс. количество выгружаемых заказов от 1 до 1000
+limit = 1000                        # Макс. количество выгружаемых заказов от 1 до 1000
 offset = 0                          # Кол-во пропускаемых элементов. Если offset = 10, то ответ начнется с 11 заказа
 translit = True                     # True, если включена транслитерация адреса из кириллицы в латиницу
 analytics_data = False              # Не включать данные аналитики в ответ
-financial_data = True               # Включить финансовые данные в ответ, чтобы посчитать общую комиссию с продажи
+financial_data = False               # Включить финансовые данные в ответ, чтобы посчитать общую комиссию с продажи
 
 filter_ = {'since': date_from, 'status': status, 'to': date_to}     # Фильтр для поиска отправленийпо параметрам
 with_ = {'analytics_data': analytics_data, 'financial_data': financial_data}    # Доп. поля, для добавления в ответ

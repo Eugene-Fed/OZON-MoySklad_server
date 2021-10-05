@@ -67,7 +67,7 @@ for order in ozon_orders['result']:
     moysklad_retailDemand['name'] = str(order['order_number'])          # Номер заказа - строка
     moysklad_retailDemand['code'] = str(order['order_id'])              # Код заказа - строка
 
-    product_quantity = 0  # TODO костыль, т.к. есть два разных поля quantity, одно в products, другое - в financial_data
+    # product_quantity = 0  # Есть два разных поля quantity, одно в products, другое - в financial_data
 
     for product in order['products']:   # проходим по циклу список продуктов с основными данными
         # TODO В этом цикле нужно сформировать список всех мета-id товаров в заказе, чтобы далее передать его в заказ
@@ -76,25 +76,30 @@ for order in ozon_orders['result']:
         # Находим общую стоимость заказа как сумму всех тваров в заказе, умноженную на их количество, т.к. ОЗОН
         # не передает ИТОГ отдельным полем - только по артикульно.
         # moysklad_retailDemand['sum'] += float(product['price']) * int(product['quantity'])
-        product_quantity = int(product['quantity'])     # TODO - временный костыль, разобраться с количеством корректнее
+        # product_quantity = int(product['quantity'])  # TODO - временный костыль, разобраться с количеством корректнее
         # Вычисляем накладные расходы, чтобы добавить о них инфо для каждого отдельного товара
 
-    for product in order['financial_data']['products']:     # проходим по циклу второй список продуктов с доп. данными
-        total_cost = float(product['commission_amount'])       # приравниваем общим расходам по товару размер комиссии
-        moysklad_retailDemand['sum'] += product['price']   # Считаем полную сумму заказа сложением цены товаров в заказе
+        # for product in order['financial_data']['products']: # проходим по циклу второй список продуктов с доп. данными
+        # total_cost = float(product['commission_amount'])       # приравниваем общим расходам по товару размер комиссии
+        # Считаем полную сумму заказа сложением цены всех товаров в заказе
+        moysklad_retailDemand['sum'] += float(product['price']) * int(product['quantity'])
 
-        for item in product['item_services']:
-            # Добавляем к комиссии прочие расходы, которые передаются ОЗОН с отриц. знач.
-            total_cost += -float(product['item_services'][item])
+        # for item in product['item_services']:
+        #     # Добавляем к комиссии прочие расходы, которые передаются ОЗОН с отриц. знач.
+        #     total_cost += -float(product['item_services'][item])    # Комиссия с пролажи - не учитывается МойСклад
 
         moysklad_retailDemand['positions'].append({
-            'quantity': product_quantity, 'price': product['price'], 'assortment': {  # todo - quantity пофиксить
+            # todo - quantity пофиксить, сейчас берется значение только первого товара в заказе
+            # цену товара из ОЗОН умножаем на 100, т.к. судя по всему МойСклад принимает цену товара в коейках
+            'quantity': int(product['quantity']), 'price': float(product['price']) * 100, 'assortment': {
                 'meta': {"href": api_domain+api_url+api_name_product+'/'+product_id,
                          'type': api_name_product,
                          "mediaType": "application/json"}
-            }, 'cost': total_cost               # Комиссия с продажи номенклатуры
+            }   # , 'cost': total_cost  # Комиссия с продажи номенклатуры - не учитывается в системе МойСклад
         })
 
+    # TODO - попробовать использовать поле 'payedSum' для того, чтобы учесть комиссию с продажи ОЗОН
+    # TODO - можно посчитать total_cost, вычесть ее из 'sum' и записать это значение в параметр 'payedSum'
     moysklad_retailDemand['payedSum'] = moysklad_retailDemand['sum']  # Пока не разобрался для чего поле, поэтому так
     print(json.dumps(moysklad_retailDemand, indent=2, ensure_ascii=False))
 
