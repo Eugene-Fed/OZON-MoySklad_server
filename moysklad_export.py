@@ -42,11 +42,6 @@ print(json.dumps(moysklad_retailShifts, indent=2, ensure_ascii=False))
 with open('data/ozon_orders.json') as f:                        # Открываем файл с заказами ОЗОН за все время
     ozon_orders = json.load(f)
 
-with open('data/retailDemand_create.json') as f:                       # Файл с шаблоном заказа для выгрузки в МойСклад
-    moysklad_retailDemand = json.load(f)
-
-moysklad_retailDemand['retailShift']['meta']['href'] = api_domain + api_url + api_name_retailShift + '/' +\
-                                                       retailShift_create_id
 
 # Создаем переменную формата ДатаВремя со значением 1 минута для того, чтобы в цикле выгрузки заказов озон
 # в смену МойСклад, каждый следующий заказ приходил на 1 минуту позже, чем предыдущий, начиная с момента открытия смены
@@ -61,6 +56,11 @@ order_date = datetime.strptime(retailShift_create_date, "%Y-%m-%d %H:%M:%S.%f") 
 # TODO Для начала выгрузить только товары со статусом 'delivered', чтобы не получить завышенную выручку в МойСклад
 # TODO далее сверять заказы с учетом статусов и изменять их при необходимости.
 for order in ozon_orders['result']:
+    with open('data/retailDemand_create.json') as f:  # Файл с шаблоном заказа для выгрузки в МойСклад
+        moysklad_retailDemand = json.load(f)
+    moysklad_retailDemand['retailShift']['meta']['href'] = api_domain + api_url + api_name_retailShift + '/' +\
+                                                           retailShift_create_id
+
     order_date += increase_time                # Время заказа = +1 минута к созданию смены и созданию предыдущего заказа
     order_date_export = datetime.strftime(order_date, "%Y-%m-%d %H:%M:%S")  # Строка с датой/временем заказа для МойСкад
     moysklad_retailDemand['moment'] = order_date_export                 # Дата и время создания заказа на ОЗОН
@@ -75,22 +75,24 @@ for order in ozon_orders['result']:
 
         # Находим общую стоимость заказа как сумму всех тваров в заказе, умноженную на их количество, т.к. ОЗОН
         # не передает ИТОГ отдельным полем - только по артикульно.
-        moysklad_retailDemand['sum'] += float(product['price']) * int(product['quantity'])
+        # moysklad_retailDemand['sum'] += float(product['price']) * int(product['quantity'])
         product_quantity = int(product['quantity'])     # TODO - временный костыль, разобраться с количеством корректнее
         # Вычисляем накладные расходы, чтобы добавить о них инфо для каждого отдельного товара
 
     for product in order['financial_data']['products']:     # проходим по циклу второй список продуктов с доп. данными
         total_cost = float(product['commission_amount'])       # приравниваем общим расходам по товару размер комиссии
-        for key in product['item_services']:
+        moysklad_retailDemand['sum'] += product['price']   # Считаем полную сумму заказа сложением цены товаров в заказе
+
+        for item in product['item_services']:
             # Добавляем к комиссии прочие расходы, которые передаются ОЗОН с отриц. знач.
-            total_cost += -float(product['item_services'][key])
+            total_cost += -float(product['item_services'][item])
 
         moysklad_retailDemand['positions'].append({
-            'quantity': product_quantity, 'price': float(product['price']), 'assortment': {  # todo - quantity пофиксить
+            'quantity': product_quantity, 'price': product['price'], 'assortment': {  # todo - quantity пофиксить
                 'meta': {"href": api_domain+api_url+api_name_product+'/'+product_id,
                          'type': api_name_product,
                          "mediaType": "application/json"}
-            }, 'cost': total_cost
+            }, 'cost': total_cost               # Комиссия с продажи номенклатуры
         })
 
     moysklad_retailDemand['payedSum'] = moysklad_retailDemand['sum']  # Пока не разобрался для чего поле, поэтому так
