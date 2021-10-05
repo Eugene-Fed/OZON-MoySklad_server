@@ -28,16 +28,18 @@ headers = {'Authorization': api_key}   # Заголовок запроса
 response_retailShift = requests.get(api_com_retailShift, headers=headers)
 retailShifts_list = response_retailShift.json()['rows']
 print("Статус запроса на создание смены: " + str(response_retailShift.status_code))  # Вывод статуса запроса
+# print(json.dumps(retailShifts_list, indent=4, ensure_ascii=False))
 
 retailShifts_meta = []                             # Список открытых смен
 for element in retailShifts_list:                   # Проходим по списку открытых смен из респонса
     # print('Название смены: ' + element['name'])
     # print('ID Смены: ' + element['id'])
-    retailShifts_element = {'name': element['name'], 'id': element['id']}   # Создаем объект, содержащие мета смены
+    retailShifts_element = {'name': element['name'], 'id': element['id'],
+                            'created': element['created']}                  # Создаем объект, содержащие мета смены
     retailShifts_meta.append(retailShifts_element)                          # Добавляем объект с мета в список смен
 
 # print("\nРозничные смены получены:\n" + json.dumps(response_retailShift.json(), indent=4, ensure_ascii=False))
 with open('data/retailShifts.json', 'w') as outfile:
-    json.dump({'retailShifts': retailShifts_meta}, outfile, indent=4, ensure_ascii=False) # запись данных смен в файл
+    json.dump({'retailShifts': retailShifts_meta}, outfile, indent=4, ensure_ascii=False)   # запись данных смен в файл
     print('\n\n ### Содержимое retailShifts.json ###')
     print(json.dumps(retailShifts_meta, indent=4, ensure_ascii=False))
