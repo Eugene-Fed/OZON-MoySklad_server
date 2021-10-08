@@ -30,18 +30,31 @@ def ozon_moysklad_id_converter(ozon_product_code):
     return response_product.json()['rows'][0]['id']     # Получаем ID варианта товара
 
 
+# Метод для определения, была ли это продажа выгружена в МойСклад ранее. Не выгружать, если уже данные о продаже есть.
+def moysklad_retail_demand_search(ozon_retail_demand_name):
+    response_ozon_retail_demand = requests.get(api_domain + api_url + api_name_retailDemand, headers=headers,
+                                         params='filter=name='+ozon_retail_demand_name)
+    print("Статус запроса наличия Продажи: " + str(response_ozon_retail_demand.status_code))
+    print(json.dumps(response_ozon_retail_demand.json(), indent=2, ensure_ascii=False))
+    # Если размер параметр meta>size = 1, значит такое имя продажи в МойСклад уже встречается,
+    # в противном случае - это новая продажа. Можно конечно возвращать само значение размера, т.к. 0=False, 1=True,
+    # но с дополнительной переменной читаемость кода выше
+    is_uploaded = True if response_ozon_retail_demand.json()['meta']['size'] > 0 else False
+    return is_uploaded
+
+
 with open('data/retailShifts.json') as f:                       # Файл с открытыми сменами МойСклад
     moysklad_retailShifts = json.load(f)
 
-retailShift_create_date = moysklad_retailShifts['retailShifts'][0]['created']      # ДатаВремя создания смены в МойСклад
-retailShift_create_id = moysklad_retailShifts['retailShifts'][0]['id']             # ID смены в МойСклад
+# Получаем дату создания и ID последней существующей смены
+retailShift_create_date = moysklad_retailShifts['retailShifts'][-1]['created']     # ДатаВремя создания смены в МойСклад
+retailShift_create_id = moysklad_retailShifts['retailShifts'][-1]['id']            # ID смены в МойСклад
 
 print('Список открытых смен:')
 print(json.dumps(moysklad_retailShifts, indent=2, ensure_ascii=False))
 
 with open('data/ozon_orders.json') as f:                        # Открываем файл с заказами ОЗОН за все время
     ozon_orders = json.load(f)
-
 
 # Создаем переменную формата ДатаВремя со значением 1 минута для того, чтобы в цикле выгрузки заказов озон
 # в смену МойСклад, каждый следующий заказ приходил на 1 минуту позже, чем предыдущий, начиная с момента открытия смены
@@ -53,6 +66,7 @@ increase_time = timedelta(minutes=1)
 # order_date - "виртуальное" время заказа. Время первого заказа считается от времени открытия смены.
 order_date = datetime.strptime(retailShift_create_date, "%Y-%m-%d %H:%M:%S.%f")  # Преобразуем строку в ДатаВремя
 
+retailDemands_count = 0     # Количество выгруженных продаж
 # TODO Для начала выгрузить только товары со статусом 'delivered', чтобы не получить завышенную выручку в МойСклад
 # TODO далее сверять заказы с учетом статусов и изменять их при необходимости.
 for order in ozon_orders['result']:
@@ -108,6 +122,7 @@ for order in ozon_orders['result']:
     print("Статус создания Розничной Продажи: " + str(response_retailDemand.status_code))
     print('Ответ сервера МойСклад:')
     print(json.dumps(response_retailDemand.json(), indent=2, ensure_ascii=False))
+    retailDemands_count += 1    # Если выгрузка прошла успешно - суммируем ее к общему количеству
 
 
 # МойСклад не принимает формат ДатаВремя с конечным Z, поэтому убираем его перед отправкой запроса

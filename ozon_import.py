@@ -1,6 +1,7 @@
 import requests
 import json
 import datetime
+from datetime import timedelta
 
 with open('api-keys/api-keys.json') as f:
     api_params = json.load(f)['api_ozon']   # выбираем только данные объекта api_ozon
@@ -14,8 +15,10 @@ api_url = api_params['api_url']
 # Начальная и конечная дата для выгрузки заказов. Текст формата '2021-07-13T00:00:00Z'
 # Z на конце = UTF+0 для того, чтобы смена открывалась в 3 ночи по МСК
 # Смена начинается и заканчивается в 00:00 для того, чтобы избежать потери заказов между 23:59 и 00:00
-date_from = '2021-07-13T00:00:00Z'                  # Дата первой отгрузки на OZON, ранее которой заказов не могло быть
+date_from_decrease_time = timedelta(days=30)        # Количество дней от текущего для расчета диапазона загрузки заказов
 date_today = datetime.date.today().strftime("%Y-%m-%d")     # Получаем текущую дату и преобразуем в текст понятный API
+date_startday = datetime.date.today() - date_from_decrease_time  # Получаем дату за N дней до сегодняшней
+date_from = date_startday.strftime("%Y-%m-%d") + 'T00:00:00Z'    # Дата начала выгрузки заказов
 date_to = date_today + 'T00:00:00Z'                         # Добавляем время начала суток в формате, понятном OZON
 # Загружаем только заказы по вчерашний день включительно, заказы за сегодня нам не нужны.
 
