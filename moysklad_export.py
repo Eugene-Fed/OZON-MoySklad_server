@@ -21,12 +21,12 @@ with open('data/product-id_corr-table.json') as f:
 
 # Функция для определения meta-идентификатора товара в МойСклад по его артикулу из ОЗОН
 # TODO Использовать файл data/product_id-corr_table.json для того, чтобы заменить Код товара МойСклад на артикулы ОЗОН,
-# TODO в случае, если эти артикулы соответствуют ШК Вайлдберриз
+# todo в случае, если эти артикулы соответствуют ШК Вайлдберриз
 def ozon_moysklad_id_converter(ozon_product_code):
     moysklad_product_code = product_id_table[ozon_product_code]     # сопоставляем код МойСклад с артикулом ОЗОН
     response_product = requests.get(api_domain + api_url + api_name_product, headers=headers,
                                     params='filter=code=' + moysklad_product_code)
-    print("Статус запроса данных Товара: " + str(response_product.status_code))
+    # print("Статус запроса данных Товара: " + str(response_product.status_code))
     return response_product.json()['rows'][0]['id']     # Получаем ID варианта товара
 
 
@@ -34,8 +34,8 @@ def ozon_moysklad_id_converter(ozon_product_code):
 def moysklad_retail_demand_search(ozon_retail_demand_name):
     response_ozon_retail_demand = requests.get(api_domain + api_url + api_name_retailDemand, headers=headers,
                                          params='filter=name='+ozon_retail_demand_name)
-    print("Статус запроса наличия Продажи: " + str(response_ozon_retail_demand.status_code))
-    print(json.dumps(response_ozon_retail_demand.json(), indent=2, ensure_ascii=False))
+    # print("Статус запроса наличия Продажи: " + str(response_ozon_retail_demand.status_code))
+    # print(json.dumps(response_ozon_retail_demand.json(), indent=2, ensure_ascii=False))
     # Если размер параметра /meta/size = 1, значит такое имя продажи в МойСклад уже встречается,
     # в противном случае - это новая продажа. Можно конечно возвращать само значение размера, т.к. 0=False, 1=True,
     # но с дополнительной переменной читаемость кода выше
@@ -49,17 +49,21 @@ with open('data/retailShifts.json') as f:                       # Файл с о
     moysklad_retailShifts = json.load(f)
 
 # Получаем дату создания и ID последней существующей смены
-retailShift_create_date = moysklad_retailShifts['retailShifts'][-1]['created']     # ДатаВремя создания смены в МойСклад
-retailShift_create_id = moysklad_retailShifts['retailShifts'][-1]['id']            # ID смены в МойСклад
-retailShift_close_date = moysklad_retailShifts['retailShifts'][-1]['closed']        # Дата закрытия смены.
-# если Дата закрытия смены == 0 (фактически аналогично False), занчит смена еще открыта и можно данные выгружать в нее
-# если Дата смены принимает значение - необходимо открыть новую смену.
+# TODO 1 Проверить в каком порядке смены выгружаются в список. Если каждая новая встает в начало списка, а старые
+# todo смещаются назад, то необходимо брать в работу индекс [0]. В противном случае - [-1]
+# TODO 2 Если список смен пустой - необходимо создать новую смену
+retailShift_create_date = moysklad_retailShifts['retailShifts'][0]['created']     # ДатаВремя создания смены в МойСклад
+retailShift_create_id = moysklad_retailShifts['retailShifts'][0]['id']            # ID смены в МойСклад
+retailShift_close_date = moysklad_retailShifts['retailShifts'][0]['closed']        # Дата закрытия смены.
+
+# если Дата смены == True, т.е. принимает значение - необходимо открыть новую смену, т.к. она уже закрыта
+# если Дата закрытия смены == False (фактически == 0), занчит смена еще открыта и можно данные выгружать в нее
 if retailShift_close_date:
     # TODO createNewShift
-    print(retailShift_close_date)
+    print("Необходимо создать новую смену")
 else:
     # TODO используем отрытую смену
-    print(retailShift_close_date)
+    print("Старая смена еще открыта")
 
 print('Список открытых смен:')
 print(json.dumps(moysklad_retailShifts, indent=2, ensure_ascii=False))
@@ -77,10 +81,18 @@ increase_time = timedelta(minutes=1)
 # order_date - "виртуальное" время заказа. Время первого заказа считается от времени открытия смены.
 order_date = datetime.strptime(retailShift_create_date, "%Y-%m-%d %H:%M:%S.%f")  # Преобразуем строку в ДатаВремя
 
-retailDemands_count = 0     # Количество выгруженных продаж
+# TODO предварительно проверить наличие параметра 'result', который может отсутстовать, если заказов не было
+retailDemands_total = len(ozon_orders['result'])        # Общее количество загруженных продаж
+retailDemands_count = 0                                 # Количество выгруженных продаж
 # TODO Для начала выгрузить только товары со статусом 'delivered', чтобы не получить завышенную выручку в МойСклад
-# TODO далее сверять заказы с учетом статусов и изменять их при необходимости.
+# todo далее сверять заказы с учетом статусов и изменять их при необходимости.
 for order in ozon_orders['result']:
+
+    if moysklad_retail_demand_search(order['order_number']):    # проверяем была ли выгрузка этого заказа в МойСклад
+        print("Заказ № {} был выгружен ранее".format(order['order_number']))
+        continue
+
+    print("Заказ № {} будет выгружен в активную смену".format(order['order_number']))
     with open('data/retailDemand_create.json') as f:  # Файл с шаблоном заказа для выгрузки в МойСклад
         moysklad_retailDemand = json.load(f)
     moysklad_retailDemand['retailShift']['meta']['href'] = api_domain + api_url + api_name_retailShift + '/' +\
@@ -123,18 +135,19 @@ for order in ozon_orders['result']:
             }   # , 'cost': total_cost  # Комиссия с продажи номенклатуры - не учитывается в системе МойСклад
         })
 
-    # TODO - попробовать использовать поле 'payedSum' для того, чтобы учесть комиссию с продажи ОЗОН
-    # TODO - можно посчитать total_cost, вычесть ее из 'sum' и записать это значение в параметр 'payedSum'
+    # TODO 1 Попробовать использовать поле 'payedSum' для того, чтобы учесть комиссию с продажи ОЗОН
+    # TODO 2 Можно посчитать total_cost, вычесть ее из 'sum' и записать это значение в параметр 'payedSum'
     moysklad_retailDemand['payedSum'] = moysklad_retailDemand['sum']  # Пока не разобрался для чего поле, поэтому так
-    print(json.dumps(moysklad_retailDemand, indent=2, ensure_ascii=False))
+    # print(json.dumps(moysklad_retailDemand, indent=2, ensure_ascii=False))
 
     response_retailDemand = requests.post(api_domain + api_url + api_name_retailDemand, headers=headers,
                                     json=moysklad_retailDemand)
     print("Статус создания Розничной Продажи: " + str(response_retailDemand.status_code))
-    print('Ответ сервера МойСклад:')
-    print(json.dumps(response_retailDemand.json(), indent=2, ensure_ascii=False))
+    # print('Ответ сервера МойСклад:')
+    # print(json.dumps(response_retailDemand.json(), indent=2, ensure_ascii=False))
     retailDemands_count += 1    # Если выгрузка прошла успешно - суммируем ее к общему количеству
 
+print('Всего заказов загружено: {}, из них выгружено в МойСклад: {}'.format(retailDemands_total, retailDemands_count))
 
 # МойСклад не принимает формат ДатаВремя с конечным Z, поэтому убираем его перед отправкой запроса
 # Надо иметь ввиду, что в МойСклад нельзя отправит заказ с датой раньше, чем дата открытия смены,
