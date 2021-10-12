@@ -30,19 +30,21 @@ def ozon_moysklad_id_converter(ozon_product_code):
     return response_product.json()['rows'][0]['id']     # Получаем ID варианта товара
 
 
-# Метод для определения, была ли это продажа выгружена в МойСклад ранее. Не выгружать, если уже данные о продаже есть.
+# Метод для определения, была ли это продажа выгружена в МойСклад ранее. Не выгружать, если данные о продаже уже есть.
 def moysklad_retail_demand_search(ozon_retail_demand_name):
     response_ozon_retail_demand = requests.get(api_domain + api_url + api_name_retailDemand, headers=headers,
                                          params='filter=name='+ozon_retail_demand_name)
     print("Статус запроса наличия Продажи: " + str(response_ozon_retail_demand.status_code))
     print(json.dumps(response_ozon_retail_demand.json(), indent=2, ensure_ascii=False))
-    # Если размер параметр meta>size = 1, значит такое имя продажи в МойСклад уже встречается,
+    # Если размер параметра /meta/size = 1, значит такое имя продажи в МойСклад уже встречается,
     # в противном случае - это новая продажа. Можно конечно возвращать само значение размера, т.к. 0=False, 1=True,
     # но с дополнительной переменной читаемость кода выше
     is_uploaded = True if response_ozon_retail_demand.json()['meta']['size'] > 0 else False
     return is_uploaded
 
 
+# TODO 1: Создать класс moysklad_retailShifts-open
+# TODO 2: Использовать получение данных о существующих сменах с использования этого класса, вместо данных в файл
 with open('data/retailShifts.json') as f:                       # Файл с открытыми сменами МойСклад
     moysklad_retailShifts = json.load(f)
 
@@ -150,7 +152,7 @@ for order in ozon_orders['result']:
 # если реквест используется с декодером (request.post(json=dataset))
 # request_body = {'dir':dir_to, 'filter':filter_, 'limit':limit, 'offset':offset,\
 #                    'translit':translit, 'with':with_}
-request_body = {}
+# request_body = {}
 
 # response = requests.post(api_domain + api_url + 'retaildemand', headers=headers, json=request_body)
 # data = response.json()

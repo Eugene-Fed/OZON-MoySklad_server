@@ -28,14 +28,26 @@ headers = {'Authorization': api_key}   # Заголовок запроса
 response_retailShift = requests.get(api_com_retailShift, headers=headers)
 retailShifts_list = response_retailShift.json()['rows']
 print("Статус запроса на создание смены: " + str(response_retailShift.status_code))  # Вывод статуса запроса
-# print(json.dumps(retailShifts_list, indent=4, ensure_ascii=False))
+print(json.dumps(retailShifts_list, indent=4, ensure_ascii=False))
 
 retailShifts_meta = []                             # Список открытых смен
 for element in retailShifts_list:                   # Проходим по списку открытых смен из респонса
-    # print('Название смены: ' + element['name'])
-    # print('ID Смены: ' + element['id'])
+    # Создаем объект, содержащие мета смены
     retailShifts_element = {'name': element['name'], 'id': element['id'],
-                            'created': element['created']}                  # Создаем объект, содержащие мета смены
+                            'created': element['created']}
+    # Проверяем статус смены. Если смена уже была закрыта - в ответе существует параметр 'closeDate'.
+    # Если параметр не задан, значит смена еще открыта.
+    if 'closeDate' in element:
+        retailShifts_element['closed'] = element['closeDate']
+    else:
+        retailShifts_element['closed'] = 0  # 0 == False, можно заменить на пустую строку ''
+
+    # Считаем количество продаж в смене. Если параметр 'operations' не задан, значит продаж не было и их кол-во == 0
+    if 'operations' in element:
+        retailShifts_element['sales count'] = len(element['operations'])
+    else:
+        retailShifts_element['sales count'] = 0
+
     retailShifts_meta.append(retailShifts_element)                          # Добавляем объект с мета в список смен
 
 # print("\nРозничные смены получены:\n" + json.dumps(response_retailShift.json(), indent=4, ensure_ascii=False))
