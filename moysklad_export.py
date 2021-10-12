@@ -44,13 +44,22 @@ def moysklad_retail_demand_search(ozon_retail_demand_name):
 
 
 # TODO 1: Создать класс moysklad_retailShifts-open
-# TODO 2: Использовать получение данных о существующих сменах с использования этого класса, вместо данных в файл
+# TODO 2: Использовать получение данных о существующих сменах с использования этого класса, вместо данных из файла
 with open('data/retailShifts.json') as f:                       # Файл с открытыми сменами МойСклад
     moysklad_retailShifts = json.load(f)
 
 # Получаем дату создания и ID последней существующей смены
 retailShift_create_date = moysklad_retailShifts['retailShifts'][-1]['created']     # ДатаВремя создания смены в МойСклад
 retailShift_create_id = moysklad_retailShifts['retailShifts'][-1]['id']            # ID смены в МойСклад
+retailShift_close_date = moysklad_retailShifts['retailShifts'][-1]['closed']        # Дата закрытия смены.
+# если Дата закрытия смены == 0 (фактически аналогично False), занчит смена еще открыта и можно данные выгружать в нее
+# если Дата смены принимает значение - необходимо открыть новую смену.
+if retailShift_close_date:
+    # TODO createNewShift
+    print(retailShift_close_date)
+else:
+    # TODO используем отрытую смену
+    print(retailShift_close_date)
 
 print('Список открытых смен:')
 print(json.dumps(moysklad_retailShifts, indent=2, ensure_ascii=False))
