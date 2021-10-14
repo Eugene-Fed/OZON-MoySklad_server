@@ -15,6 +15,7 @@ api_url = api_params['api_url']
 # Начальная и конечная дата для выгрузки заказов. Текст формата '2021-07-13T00:00:00Z'
 # Z на конце = UTF+0 для того, чтобы смена открывалась в 3 ночи по МСК
 # Смена начинается и заканчивается в 00:00 для того, чтобы избежать потери заказов между 23:59 и 00:00
+# TODO вынести количество дней для выгрузки в отдельный файл настроек
 date_from_decrease_time = timedelta(days=45)        # Количество дней от текущего для расчета диапазона загрузки заказов
 date_today = datetime.date.today().strftime("%Y-%m-%d")     # Получаем текущую дату и преобразуем в текст понятный API
 date_start_day = datetime.date.today() - date_from_decrease_time  # Получаем дату за N дней до сегодняшней
@@ -54,9 +55,6 @@ print('\nКоличество заказов: ' + str(len(json_orders['result'])
 #     print(element['status'] + '\t' + element['created_at'])
 #
 # TODO заменить использование файла на прямую передачу данных из объекта класса Ozon_Import в скрипт moysklad_export.py
-try:
-    with open('data/ozon_orders.json', 'w') as outfile:
-        json.dump(json_orders, outfile, indent=4, ensure_ascii=False)
-        print(format_data)
-except IOError:
-    # generate this file
+with open('data/ozon_orders.json', 'w') as outfile:  # Проверка наличия файла не требуется, т.к. 'w' создает файл
+    json.dump(json_orders, outfile, indent=4, ensure_ascii=False)
+    print(format_data)
