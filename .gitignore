@@ -5,8 +5,10 @@ __pycache__/
 
 # API keys, meta, data and other secret info
 api-keys
-/meta/
-/data/
+/data/moysklad_retail_shifts_list.json
+/data/ozon_orders.json
+# meta/ # - not used
+/temporary_garbage/ # корзина временных файлов
 
 # C extensions
 *.so

@@ -1,11 +1,12 @@
 import requests
 import json
 import datetime
+from datetime import timedelta
 
 with open('api-keys/api-keys.json') as f:
     api_params = json.load(f)['api_ozon']   # выбираем только данные объекта api_ozon
 
-# Параметры для запроса к серверу API
+# Параметры, необходимые для запроса к серверу API
 client_id = api_params['client_id']
 api_key = api_params['api_key']
 api_domain = api_params['api_domain']
@@ -14,9 +15,13 @@ api_url = api_params['api_url']
 # Начальная и конечная дата для выгрузки заказов. Текст формата '2021-07-13T00:00:00Z'
 # Z на конце = UTF+0 для того, чтобы смена открывалась в 3 ночи по МСК
 # Смена начинается и заканчивается в 00:00 для того, чтобы избежать потери заказов между 23:59 и 00:00
-date_from = '2021-07-13T00:00:00Z'                  # Дата первой отгрузки на OZON, ранее которой заказов не могло быть
+# TODO вынести количество дней для выгрузки в отдельный файл настроек
+date_from_decrease_time = timedelta(days=45)        # Количество дней от текущего для расчета диапазона загрузки заказов
 date_today = datetime.date.today().strftime("%Y-%m-%d")     # Получаем текущую дату и преобразуем в текст понятный API
-date_to = date_today + 'T00:00:00Z'                         # Добавляем время начала суток в формате, понятном OZON
+date_start_day = datetime.date.today() - date_from_decrease_time  # Получаем дату за N дней до сегодняшней
+# TODO вынесли время начала/завершения смены (3 часа ночи) в отдельный файл настроек
+date_from = date_start_day.strftime("%Y-%m-%d") + 'T03:00:00Z'    # Дата начала выгрузки заказов
+date_to = date_today + 'T03:00:00Z'                         # Добавляем время начала суток в формате, понятном OZON
 # Загружаем только заказы по вчерашний день включительно, заказы за сегодня нам не нужны.
 
 dir_to = 'asc'                      # Порядок сортировки: asc - по возрастанию, desc - по убыванию
@@ -50,6 +55,7 @@ print('\nКоличество заказов: ' + str(len(json_orders['result'])
 # for element in json_orders['result']:
 #     print(element['status'] + '\t' + element['created_at'])
 #
-with open('data/ozon_orders.json', 'w') as outfile:
+# TODO заменить использование файла на прямую передачу данных из объекта класса Ozon_Import в скрипт moysklad_export.py
+with open('data/ozon_orders.json', 'w') as outfile:  # Проверка наличия файла не требуется, т.к. 'w' создает файл
     json.dump(json_orders, outfile, indent=4, ensure_ascii=False)
     print(format_data)

@@ -1,0 +1,15 @@
+{
+    "retailShift": {
+      "meta": {
+        "href": "_api_domain_/_api_url_/retailshift/_retailShift_meta_",
+        "type": "retailshift",
+        "mediaType": "application/json"
+      }
+    },
+    "name": "_retailDemand_name_",
+    "code": "_retailDemand_code_",
+    "moment": "_date_time_",
+    "sum": 0,
+    "payedSum": 0,
+    "positions": []
+}
