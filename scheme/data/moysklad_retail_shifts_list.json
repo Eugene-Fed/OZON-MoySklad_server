@@ -1,0 +1,11 @@
+{
+    "retailShifts": [
+        {
+            "name": "_text_number_",
+            "id": "_meta_id_",
+            "created": "_date_time",
+            "closed": "_date_time_",
+            "sales count": _number_
+        }
+    ]
+}
