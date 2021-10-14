@@ -28,7 +28,7 @@ api_com_retailShift = api_domain + api_url + api_name_retailShift           # Р
 headers = {'Authorization': api_key, 'Content-Type': 'application/json'}   # Заголовок запроса
 
 # Тело запроса
-with open('data/retailShift_create.json') as f:           # Файл со структурой тела запроса на создание розничной смены
+with open('scheme/templates/retailShift_create.json') as f:    # Файл со структурой тела запроса на создание розн. смены
     request_body = json.load(f)
 request_body['organization']['meta']['href'] = api_com_organization + '/' + id_organization
 request_body['organization']['meta']['metadataHref'] = api_com_organization + '/metadata'

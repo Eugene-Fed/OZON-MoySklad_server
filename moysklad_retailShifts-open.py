@@ -51,7 +51,8 @@ for element in retailShifts_list:                   # Проходим по сп
     retailShifts_meta.append(retailShifts_element)                          # Добавляем объект с мета в список смен
 
 # print("\nРозничные смены получены:\n" + json.dumps(response_retailShift.json(), indent=4, ensure_ascii=False))
-with open('data/retailShifts.json', 'w') as outfile:
+# TODO проверить наличие файла. Если файл отсутствует, использовать шаблон из папки /scheme/ и создать файл в /data/
+with open('data/moysklad_retail_shifts_list.json', 'w') as outfile:
     json.dump({'retailShifts': retailShifts_meta}, outfile, indent=4, ensure_ascii=False)   # запись данных смен в файл
-    print('\n\n ### Содержимое retailShifts.json ###')
+    print('\n\n ### Содержимое moysklad_retail_shifts_list.json ###')
     print(json.dumps(retailShifts_meta, indent=4, ensure_ascii=False))

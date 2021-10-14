@@ -45,7 +45,7 @@ def moysklad_retail_demand_search(ozon_retail_demand_name):
 
 # TODO 1: Создать класс moysklad_retailShifts-open
 # TODO 2: Использовать получение данных о существующих сменах с использования этого класса, вместо данных из файла
-with open('data/retailShifts.json') as f:                       # Файл с открытыми сменами МойСклад
+with open('data/moysklad_retail_shifts_list.json') as f:                       # Файл с открытыми сменами МойСклад
     moysklad_retailShifts = json.load(f)
 
 # Получаем дату создания и ID последней существующей смены
@@ -63,7 +63,7 @@ if retailShift_close_date:
     print("Необходимо создать новую смену")
 else:
     # TODO используем отрытую смену
-    print("Старая смена еще открыта")
+    print("Старая смена еще открыта, выгружаем в нее.")
 
 print('Список открытых смен:')
 print(json.dumps(moysklad_retailShifts, indent=2, ensure_ascii=False))
@@ -93,7 +93,7 @@ for order in ozon_orders['result']:
         continue
 
     print("Заказ № {} будет выгружен в активную смену".format(order['order_number']))
-    with open('data/retailDemand_create.json') as f:  # Файл с шаблоном заказа для выгрузки в МойСклад
+    with open('scheme/templates/retailDemand_create.json') as f:  # Файл с шаблоном заказа для выгрузки в МойСклад
         moysklad_retailDemand = json.load(f)
     moysklad_retailDemand['retailShift']['meta']['href'] = api_domain + api_url + api_name_retailShift + '/' +\
                                                            retailShift_create_id
@@ -119,6 +119,7 @@ for order in ozon_orders['result']:
         # for product in order['financial_data']['products']: # проходим по циклу второй список продуктов с доп. данными
         # total_cost = float(product['commission_amount'])       # приравниваем общим расходам по товару размер комиссии
         # Считаем полную сумму заказа сложением цены всех товаров в заказе
+        # TODO выяснить, не нужно ли умножать цену товара на 100, как это сделано при подсчете стоимости ниже
         moysklad_retailDemand['sum'] += float(product['price']) * int(product['quantity'])
 
         # for item in product['item_services']:

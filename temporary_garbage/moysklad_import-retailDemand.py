@@ -1,6 +1,9 @@
 import requests
 import json
 
+
+# TODO УДАЛИТЬ СКРИПТ ЗА НЕНАДОБНОСТЬЮ
+
 with open('api-keys/api-keys.json') as f:           # Закрытый от индекса файл с ключами API и командами запросов
     api_params = json.load(f)['api_moysklad']
 
