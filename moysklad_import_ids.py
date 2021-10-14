@@ -30,10 +30,8 @@ print("Статус запроса складов: " + str(response_store.status
 response_retailStore = requests.get(api_domain + api_url + api_name_retailStore, headers=headers)
 print("Статус запроса точек продаж: " + str(response_retailStore.status_code))
 
-with open('api-keys/moysklad_ids.json') as f:            # получаем файл, чтобы внести в него все полученные мета-данные
+with open('scheme/~api-keys/moysklad_ids.json') as f:  # получаем файл, чтобы внести в него все полученные мета-данные
     moySklad_ids = json.load(f)
-# TODO - Добавить проверку на пустой файл. Если данных нет, то забирать их из файла /scheme/~f_api-keys/moysklad_ids.json
-
 
 moySklad_ids['accountId'] = response_organization.json()['rows'][0]['accountId']    # получаем значение ID пользователя
 moySklad_ids['organizationId'] = response_organization.json()['rows'][0]['id']      # получаем значение ID Организации

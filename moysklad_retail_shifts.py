@@ -53,8 +53,8 @@ def create_retail_shift():
     retail_shift_time_created = response_retail_shift.json()['created']  # Время открытия смены
 
     # Дебажный вывод в консоль
-    print("\nРозничная смена открыта, даные смены таковы:\n" +
-          json.dumps(response_retail_shift.json(), indent=4, ensure_ascii=False))
+    # print("\nРозничная смена открыта, даные смены таковы:\n" +
+    #       json.dumps(response_retail_shift.json(), indent=4, ensure_ascii=False))
     print('ID открытой смены: ' + retail_shift_id + '\nИмя розничной смены: ' + retail_shift_name +
           '\nСмена открыта в: ' + retail_shift_time_created)
 
@@ -108,5 +108,5 @@ def close_retail_shift(retail_shift_id, create_date):
     print("Статус запроса на закрытие смены: " + str(response_retail_shift.status_code))  # Вывод статуса запроса
 
 
-open_retail_shifts()
-# create_retail_shift()
+open_retail_shifts()    # открываем список смен, проверяем есть ли среди них открытые и зарывае их
+create_retail_shift()   # создаем новую смену
