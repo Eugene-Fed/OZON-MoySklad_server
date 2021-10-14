@@ -8,7 +8,7 @@ api-keys
 /data/moysklad_retail_shifts_list.json
 /data/ozon_orders.json
 # meta/ # - not used
-/temporary_garbage/ # корзина временных файлов
+/temporary_garbage/
 
 # C extensions
 *.so
