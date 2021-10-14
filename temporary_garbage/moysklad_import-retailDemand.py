@@ -4,11 +4,11 @@ import json
 
 # TODO УДАЛИТЬ СКРИПТ ЗА НЕНАДОБНОСТЬЮ
 
-with open('api-keys/api-keys.json') as f:           # Закрытый от индекса файл с ключами API и командами запросов
+with open('f_api-keys/f_api-keys.json') as f:           # Закрытый от индекса файл с ключами API и командами запросов
     api_params = json.load(f)['api_moysklad']
 
 # Дальнейшее усложнение для получения ссылки запроса создано для того, чтобы в дальнейшем не пришлось лезть в код\
-# при появлении изменений в API. Достаточно будет лишь внести корректировку в код api-keys.json, чтобы все скрипты\
+# при появлении изменений в API. Достаточно будет лишь внести корректировку в код f_api-keys.json, чтобы все скрипты\
 # начали работать корректно.
 api_key = api_params['api_key']                                 # Получаем ключ API MoySklad
 api_domain = api_params['api_domain']                           # Получаем домен API
@@ -27,7 +27,7 @@ print(json.dumps(response_retailDemand.json(), indent=2, ensure_ascii=False))
 # format_data = json.dumps(response_retailStore.json(), indent=4, ensure_ascii=False)    # красивый вывод в консоль
 # print(format_data)
 
-# with open('api-keys/moysklad_ids.json', 'w') as outfile:  # Запись в файл ID аккаунта, организации, склада, точки продаж
+# with open('f_api-keys/moysklad_ids.json', 'w') as outfile:  # Запись в файл ID аккаунта, организации, склада, точки продаж
 #     json.dump(moySklad_ids, outfile, indent=4, ensure_ascii=False)
 #     print('\n ### Содержимое moysklad_ids.json ###')
 #     print(json.dumps(moySklad_ids, indent=4, ensure_ascii=False))

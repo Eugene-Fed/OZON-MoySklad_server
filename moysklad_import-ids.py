@@ -5,7 +5,7 @@ with open('api-keys/api-keys.json') as f:           # Закрытый от ин
     api_params = json.load(f)['api_moysklad']
 
 # Дальнейшее усложнение для получения ссылки запроса создано для того, чтобы в дальнейшем не пришлось лезть в код\
-# при появлении изменений в API. Достаточно будет лишь внести корректировку в код api-keys.json, чтобы все скрипты\
+# при появлении изменений в API. Достаточно будет лишь внести корректировку в код f_api-keys.json, чтобы все скрипты\
 # начали работать корректно.
 api_key = api_params['api_key']                                 # Получаем ключ API MoySklad
 api_domain = api_params['api_domain']                           # Получаем домен API
@@ -32,7 +32,7 @@ print("Статус запроса точек продаж: " + str(response_ret
 
 with open('api-keys/moysklad_ids.json') as f:            # получаем файл, чтобы внести в него все полученные мета-данные
     moySklad_ids = json.load(f)
-# TODO - Добавить проверку на пустой файл. Если данных нет, то забирать их из файла /scheme/~api-keys/moysklad_ids.json
+# TODO - Добавить проверку на пустой файл. Если данных нет, то забирать их из файла /scheme/~f_api-keys/moysklad_ids.json
 
 
 moySklad_ids['accountId'] = response_organization.json()['rows'][0]['accountId']    # получаем значение ID пользователя
