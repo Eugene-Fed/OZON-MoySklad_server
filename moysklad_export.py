@@ -59,11 +59,13 @@ retailShift_close_date = moysklad_retailShifts['retailShifts'][0]['closed']     
 # если Дата смены == True, т.е. принимает значение - необходимо открыть новую смену, т.к. она уже закрыта
 # если Дата закрытия смены == False (фактически == 0), занчит смена еще открыта и можно данные выгружать в нее
 if retailShift_close_date:
-    # TODO createNewShift
+    # TODO moysklad_retail_shifts.create()
     print("Необходимо создать новую смену")
 else:
-    # TODO используем отрытую смену
+    # TODO moysklad_retail_shifts.open()
     print("Старая смена еще открыта, выгружаем в нее.")
+# в данные момент смены закрываются и открываются полностью под управлением скрипта moysklad_retail_shifts.py.
+# возможно этого и достаточно
 
 print('Список открытых смен:')
 print(json.dumps(moysklad_retailShifts, indent=2, ensure_ascii=False))

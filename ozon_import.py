@@ -19,8 +19,9 @@ api_url = api_params['api_url']
 date_from_decrease_time = timedelta(days=45)        # Количество дней от текущего для расчета диапазона загрузки заказов
 date_today = datetime.date.today().strftime("%Y-%m-%d")     # Получаем текущую дату и преобразуем в текст понятный API
 date_start_day = datetime.date.today() - date_from_decrease_time  # Получаем дату за N дней до сегодняшней
-date_from = date_start_day.strftime("%Y-%m-%d") + 'T00:00:00Z'    # Дата начала выгрузки заказов
-date_to = date_today + 'T00:00:00Z'                         # Добавляем время начала суток в формате, понятном OZON
+# TODO вынесли время начала/завершения смены (3 часа ночи) в отдельный файл настроек
+date_from = date_start_day.strftime("%Y-%m-%d") + 'T03:00:00Z'    # Дата начала выгрузки заказов
+date_to = date_today + 'T03:00:00Z'                         # Добавляем время начала суток в формате, понятном OZON
 # Загружаем только заказы по вчерашний день включительно, заказы за сегодня нам не нужны.
 
 dir_to = 'asc'                      # Порядок сортировки: asc - по возрастанию, desc - по убыванию
