@@ -2,6 +2,8 @@ import requests
 import json
 from datetime import datetime, timedelta
 
+# TODO добавить Try Except для открытия файла. Если файл отсутствует - прописать инструкцию для его создания
+#   и получения данных для него
 with open('api-keys/api-keys.json') as f_api:              # Закрытый от индекса файл с ключами API и командами запросов
     api_params = json.load(f_api)['api_moysklad']
 
@@ -28,6 +30,7 @@ api_com_retailShift = api_domain + api_url + api_name_retailShift           # Р
 headers = {'Authorization': api_key}   # Заголовок запроса
 
 # Проверка наличия файла настроект. Если файл отсутствует - создаем его со значением по-умолчанию
+# TODO создание файла со значениями по-умолчанию можно вынести в отдельный класс aka отделение настроек от кода
 try:
     with open('settings.json', 'r') as settings_file:
         # Если файл существует - значение длительности смены берем из него
@@ -39,7 +42,7 @@ except IOError:
     retail_shift_duration = 24
     increase_time = timedelta(hours=retail_shift_duration)
     # Кроме того создаем и сам файл по-умолчанию
-    settings_json = {"days_to_download_orders": 45, "day_start_time": "03:00",
+    settings_json = {"days_to_download_orders": 45, "day_start_time": "00:00:00",
                      "retail_shift_duration": retail_shift_duration}
     with open('settings.json', 'w') as settings_file:
         json.dump(settings_json, settings_file, indent=4, ensure_ascii=False)

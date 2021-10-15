@@ -13,15 +13,18 @@ api_domain = api_params['api_domain']
 api_url = api_params['api_url']
 
 # Начальная и конечная дата для выгрузки заказов. Текст формата '2021-07-13T00:00:00Z'
-# Z на конце = UTF+0 для того, чтобы смена открывалась в 3 ночи по МСК
+# Z на конце = UTC+0 для того, чтобы смена открывалась в 3 ночи по МСК
 # Смена начинается и заканчивается в 00:00 для того, чтобы избежать потери заказов между 23:59 и 00:00
-# TODO вынести количество дней для выгрузки в отдельный файл настроек
-date_from_decrease_time = timedelta(days=45)        # Количество дней от текущего для расчета диапазона загрузки заказов
+with open('settings.json', 'r') as settings_file:  # Если файл отсутствует, то он будет создан предыдущим скриптом
+    # Количество дней от текущего для расчета диапазона загрузки заказов
+    settings_json = json.load(settings_file)
+    days_to_download_orders = timedelta(days=settings_json['days_to_download_orders'])
+    day_start_time = settings_json['day_start_time']
+
 date_today = datetime.date.today().strftime("%Y-%m-%d")     # Получаем текущую дату и преобразуем в текст понятный API
-date_start_day = datetime.date.today() - date_from_decrease_time  # Получаем дату за N дней до сегодняшней
-# TODO вынесли время начала/завершения смены (3 часа ночи) в отдельный файл настроек
-date_from = date_start_day.strftime("%Y-%m-%d") + 'T03:00:00Z'    # Дата начала выгрузки заказов
-date_to = date_today + 'T03:00:00Z'                         # Добавляем время начала суток в формате, понятном OZON
+date_start_day = datetime.date.today() - days_to_download_orders  # Получаем дату за N дней до сегодняшней
+date_from = date_start_day.strftime("%Y-%m-%d") + "T" + day_start_time + "Z"    # Дата начала выгрузки заказов
+date_to = date_today + "T" + day_start_time + "Z"         # Добавляем время начала суток в формате, понятном OZON
 # Загружаем только заказы по вчерашний день включительно, заказы за сегодня нам не нужны.
 
 dir_to = 'asc'                      # Порядок сортировки: asc - по возрастанию, desc - по убыванию
@@ -48,13 +51,7 @@ format_data = json.dumps(json_orders, indent=2, ensure_ascii=False)         # П
 # print(format_data)                                                        # Дебажный коммент
 
 print('\nКоличество заказов: ' + str(len(json_orders['result'])))
-# print(json_orders['result'][0]['order_id'])                            # Номер заказа
-# print(json_orders['result'][1]['products'][0]['offer_id'])             # Артикул товара в заказе
-# print(response.headers)
 
-# for element in json_orders['result']:
-#     print(element['status'] + '\t' + element['created_at'])
-#
 # TODO заменить использование файла на прямую передачу данных из объекта класса Ozon_Import в скрипт moysklad_export.py
 with open('data/ozon_orders.json', 'w') as outfile:  # Проверка наличия файла не требуется, т.к. 'w' создает файл
     json.dump(json_orders, outfile, indent=4, ensure_ascii=False)
