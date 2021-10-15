@@ -1,0 +1,5 @@
+{
+    "days_to_download_orders": 45,
+    "day_start_time": "03:00",
+    "retail_shift_duration": 24
+}

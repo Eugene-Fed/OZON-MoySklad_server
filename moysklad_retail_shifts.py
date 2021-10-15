@@ -24,12 +24,26 @@ api_com_store = api_domain + api_url + api_name_store                       # К
 api_com_retailStore = api_domain + api_url + api_name_retailStore           # Команда для работы с точкой продаж
 api_com_retailShift = api_domain + api_url + api_name_retailShift           # Розничная смена
 
-# Формируем заголовок и тело запроса на создание розничной смены
-# headers = {'Authorization': 'Basic '+api_key, 'Content-Type': 'application/json'}   # Заголовок запроса
+# Формируем заголовок запроса для работы с розничными сменами
 headers = {'Authorization': api_key}   # Заголовок запроса
 
-# TODO использовать файл настроек вместо константы в подобных параметрах
-increase_time = timedelta(days=1)   # Дата закрытия каждой открытой смены равна дате открытия + 1 день
+# Проверка наличия файла настроект. Если файл отсутствует - создаем его со значением по-умолчанию
+try:
+    with open('settings.json', 'r') as settings_file:
+        # Если файл существует - значение длительности смены берем из него
+        increase_time = timedelta(hours=json.load(settings_file)['retail_shift_duration'])
+    # print('Файл существует, длительность смены равна {}'.format(str(increase_time)))
+except IOError:
+    # Если файл отсутствует, то в режиме 'r' - получим исключение.
+    # Тогда в качестве длительности смены задаем 24 часа
+    retail_shift_duration = 24
+    increase_time = timedelta(hours=retail_shift_duration)
+    # Кроме того создаем и сам файл по-умолчанию
+    settings_json = {"days_to_download_orders": 45, "day_start_time": "03:00",
+                     "retail_shift_duration": retail_shift_duration}
+    with open('settings.json', 'w') as settings_file:
+        json.dump(settings_json, settings_file, indent=4, ensure_ascii=False)
+    # print("Файл отсутствовал, был создан. Длительность смены равна {}".format(str(increase_time)))
 
 
 def create_retail_shift():
