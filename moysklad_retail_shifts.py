@@ -27,7 +27,9 @@ api_com_retailStore = api_domain + api_url + api_name_retailStore           # К
 api_com_retailShift = api_domain + api_url + api_name_retailShift           # Розничная смена
 
 # Формируем заголовок запроса для работы с розничными сменами
-headers = {'Authorization': api_key}   # Заголовок запроса
+headers = {'Authorization': api_key}                                        # Заголовок запроса
+
+# retail_shifts_meta = []                                                     # Список открытых смен
 
 # Проверка наличия файла настроект. Если файл отсутствует - создаем его со значением по-умолчанию
 # TODO создание файла со значениями по-умолчанию можно вынести в отдельный класс aka отделение настроек от кода
@@ -49,7 +51,12 @@ except IOError:
     # print("Файл отсутствовал, был создан. Длительность смены равна {}".format(str(increase_time)))
 
 
+# TODO Задать ограничение на количество проверяемых смен. Желательно по дате их открытия, но скорее всего
+#  по порядковому номеру
 def create_retail_shift():
+    # В первый раз открываем список всех смен и закрываем все ранее открытые за ненадобностью.
+    open_retail_shifts(close_shifts=True)   # Получаем список смен в МойСклад. Если обнаружены открытые смены - закрыть
+
     # Открываем файл со структурой тела запроса на создание розничной смены, и формируем request_body
     with open('scheme/templates/retailShift_create.json') as f_shift:
         request_body = json.load(f_shift)
@@ -59,43 +66,40 @@ def create_retail_shift():
     request_body['store']['meta']['metadataHref'] = api_com_store + '/metadata'
     request_body['retailStore']['meta']['href'] = api_com_retailStore + '/' + id_retailStore
     request_body['retailStore']['meta']['metadataHref'] = api_com_retailStore + '/metadata'
-
-    print(json.dumps(request_body, indent=4, ensure_ascii=False))
+    # print(json.dumps(request_body, indent=4, ensure_ascii=False))
 
     # Создаем новую смену
     response_retail_shift = requests.post(api_com_retailShift, headers=headers, json=request_body)
     print("Статус запроса на создание смены: " + str(response_retail_shift.status_code))  # Вывод статуса запроса
-    retail_shift_id = response_retail_shift.json()['id']  # ID открытой смены
-    retail_shift_name = response_retail_shift.json()['name']  # Имя открытой смены
-    retail_shift_time_created = response_retail_shift.json()['created']  # Время открытия смены
+    # Во второй раз получаем список смен уже с учетом только что открытой - ее нет необходимости закрывать
+    open_retail_shifts(close_shifts=False)  # Еще раз получаем список всех смен, в этот раз не закрывая открытые
 
     # Дебажный вывод в консоль
-    # print("\nРозничная смена открыта, даные смены таковы:\n" +
-    #       json.dumps(response_retail_shift.json(), indent=4, ensure_ascii=False))
-    print('ID открытой смены: ' + retail_shift_id + '\nИмя розничной смены: ' + retail_shift_name +
-          '\nСмена открыта в: ' + retail_shift_time_created)
+    # retail_shift_id = response_retail_shift.json()['id']  # ID открытой смены
+    # retail_shift_name = response_retail_shift.json()['name']  # Имя открытой смены
+    # retail_shift_time_created = response_retail_shift.json()['created']  # Время открытия смены
+    #
+    # # print("\nРозничная смена открыта, даные смены таковы:\n" +
+    # #       json.dumps(response_retail_shift.json(), indent=4, ensure_ascii=False))
+    # print('ID открытой смены: ' + retail_shift_id + '\nИмя розничной смены: ' + retail_shift_name +
+    #       '\nСмена открыта в: ' + retail_shift_time_created)
 
 
-def open_retail_shifts():
+def open_retail_shifts(close_shifts=True):     # Если True - запускаем команду на закрытие открытых смен, False - нет
     # Получаем список открытых розничных смен
     response_retail_shift = requests.get(api_com_retailShift, headers=headers)
     retail_shifts_list = response_retail_shift.json()['rows']
     print("Статус запроса на создание смены: " + str(response_retail_shift.status_code))  # Вывод статуса запроса
     # print(json.dumps(retail_shifts_list, indent=4, ensure_ascii=False))
 
-    retail_shifts_meta = []                             # Список открытых смен
+    if len(retail_shifts_list) == 0:    # Если в МойСклад нет открытых смен - возвращаемся в функцию создания смены
+        return
+
+    retail_shifts_meta = []  # Список открытых смен
+
     for element in retail_shifts_list:                   # Проходим по списку открытых смен из респонса
         # Создаем объект, содержащие мета смены
         retail_shifts_element = {'name': element['name'], 'id': element['id'], 'created': element['created']}
-
-        # Проверяем статус смены. Если смена уже была закрыта - в ответе существует параметр 'closeDate'.
-        # Если параметр не задан, значит смена еще открыта.
-        if 'closeDate' in element:
-            retail_shifts_element['closed'] = element['closeDate']
-        else:
-            retail_shifts_element['closed'] = 0  # 0 == False, можно заменить на пустую строку ''
-            # Если дата закрытия смены отсутствует == 0, значит смена открыта и нужно ее закрыть
-            close_retail_shift(retail_shift_id=element['id'], create_date=element['created'])
 
         # Считаем количество продаж в смене. Если параметр 'operations' не задан, значит продаж не было и их кол-во == 0
         if 'operations' in element:
@@ -103,27 +107,52 @@ def open_retail_shifts():
         else:
             retail_shifts_element['sales count'] = 0
 
+        # Проверяем статус смены. Если смена уже была закрыта - в ответе существует параметр 'closeDate'.
+        # Если параметр не задан, значит смена еще открыта.
+        if 'closeDate' in element:
+            retail_shifts_element['closed'] = element['closeDate']
+        else:
+            # retail_shifts_element['closed'] = 0  # 0 == False, можно заменить на пустую строку ''
+            # Если дата закрытия смены отсутствует == 0, значит смена открыта и нужно ее закрыть
+            if close_shifts:
+                # Если нужно закрывать открытые смены - то закрываем и присваиваем смене дату закрытия
+                retail_shifts_element['closed'] = close_retail_shift(retail_shift_id=element['id'],
+                                                                     create_date=element['created'])
+            else:
+                retail_shifts_element['closed'] = 0  # 0 == False, можно заменить на пустую строку ''
+
         retail_shifts_meta.append(retail_shifts_element)                        # Добавляем объект с мета в список смен
 
-    print("\nРозничные смены получены:\n" + json.dumps(retail_shifts_meta, indent=4, ensure_ascii=False))
+    if not close_shifts:    # Выгружать список смен в файл только если запускаем эту функцию во вторй "чистовой" раз.
+        export_retail_shifts(retail_shifts=retail_shifts_meta)
 
-    with open('data/moysklad_retail_shifts_list.json', 'w') as outfile:
-        json.dump({'retailShifts': retail_shifts_meta}, outfile, indent=4, ensure_ascii=False)  # запись данных в файл
-        print('\n\n ### Содержимое moysklad_retail_shifts_list.json ###')
-        print(json.dumps(retail_shifts_meta, indent=4, ensure_ascii=False))
+    # print("\nРозничные смены получены:\n" + json.dumps(retail_shifts_meta, indent=4, ensure_ascii=False))
+
+    # with open('data/moysklad_retail_shifts_list.json', 'w') as outfile:
+    #     json.dump({'retailShifts': retail_shifts_meta}, outfile, indent=4, ensure_ascii=False)  # запись данных в файл
+    #     print('\n\n ### Содержимое moysklad_retail_shifts_list.json ###')
+    #     print(json.dumps(retail_shifts_meta, indent=4, ensure_ascii=False))
 
 
 def close_retail_shift(retail_shift_id, create_date):
-    increase_date = datetime.strptime(create_date, "%Y-%m-%d %H:%M:%S.%f")  # получаем дату/время открытия смены из стр
-    increase_date += increase_time                                  # прибавляем к дате/времени открытия смены 1 сутки
-    close_date = datetime.strftime(increase_date, "%Y-%m-%d %H:%M:%S")      # преобразуем строку в ДатаВремя
+    increase_date = datetime.strptime(create_date, "%Y-%m-%d %H:%M:%S.%f")  # из строки в Дата/Время
+    increase_date += increase_time  # прибавляем к дате/времени создания смены длит. смены и получаем дату закрытия
+    close_date = datetime.strftime(increase_date, "%Y-%m-%d %H:%M:%S")      # из Дата/Время в строку
     print('Закрываем открытую смену {} с датой {}'.format(retail_shift_id, close_date))
 
     response_body = {"closeDate": close_date}
     response_retail_shift = requests.put(api_com_retailShift + "/" + retail_shift_id, headers=headers,
                                          json=response_body)
     print("Статус запроса на закрытие смены: " + str(response_retail_shift.status_code))  # Вывод статуса запроса
+    return close_date   # возвращаем строковую дату закрытия смены
 
 
-open_retail_shifts()    # открываем список смен, проверяем есть ли среди них открытые и зарывае их
+def export_retail_shifts(retail_shifts):
+    with open('data/moysklad_retail_shifts_list.json', 'w') as outfile:
+        json.dump({'retailShifts': retail_shifts}, outfile, indent=4, ensure_ascii=False)  # запись данных в файл
+        print('\n\n ### Содержимое moysklad_retail_shifts_list.json ###')
+        print(json.dumps(retail_shifts, indent=4, ensure_ascii=False))
+
+
+# open_retail_shifts()    # открываем список смен, проверяем есть ли среди них открытые и зарывае их
 create_retail_shift()   # создаем новую смену
