@@ -21,7 +21,7 @@ with open('data/product-id_corr-table.json') as f:
 
 # Функция для определения meta-идентификатора товара в МойСклад по его артикулу из ОЗОН
 # TODO Использовать файл data/product_id-corr_table.json для того, чтобы заменить Код товара МойСклад на артикулы ОЗОН,
-# todo в случае, если эти артикулы соответствуют ШК Вайлдберриз
+#   в случае, если эти артикулы соответствуют ШК Вайлдберриз
 def ozon_moysklad_id_converter(ozon_product_code):
     moysklad_product_code = product_id_table[ozon_product_code]     # сопоставляем код МойСклад с артикулом ОЗОН
     response_product = requests.get(api_domain + api_url + api_name_product, headers=headers,
@@ -87,7 +87,7 @@ order_date = datetime.strptime(retailShift_create_date, "%Y-%m-%d %H:%M:%S.%f") 
 retailDemands_total = len(ozon_orders['result'])        # Общее количество загруженных продаж
 retailDemands_count = 0                                 # Количество выгруженных продаж
 # TODO Для начала выгрузить только товары со статусом 'delivered', чтобы не получить завышенную выручку в МойСклад
-# todo далее сверять заказы с учетом статусов и изменять их при необходимости.
+#   Далее сверять заказы с учетом статусов и изменять их при необходимости.
 for order in ozon_orders['result']:
 
     if moysklad_retail_demand_search(order['order_number']):    # проверяем была ли выгрузка этого заказа в МойСклад
@@ -129,7 +129,7 @@ for order in ozon_orders['result']:
         #     total_cost += -float(product['item_services'][item])    # Комиссия с пролажи - не учитывается МойСклад
 
         moysklad_retailDemand['positions'].append({
-            # todo - quantity пофиксить, сейчас берется значение только первого товара в заказе
+            # TODO - quantity пофиксить, сейчас берется значение только первого товара в заказе
             # цену товара из ОЗОН умножаем на 100, т.к. судя по всему МойСклад принимает цену товара в коейках
             'quantity': int(product['quantity']), 'price': float(product['price']) * 100, 'assortment': {
                 'meta': {"href": api_domain+api_url+api_name_product+'/'+product_id,
@@ -165,22 +165,3 @@ print('Всего заказов загружено: {}, из них выгру�
 
 # utc3 = datetime.time(3, 0, 0)
 # orders_data = datetime.strftime("%Y-%m-%d %H:%M:%S", orders_data)
-
-
-# print(order_data.strftime("%Y-%m-%d %H:%M:%S"))
-
-
-# filter_ = {'since':date_from, 'status':status, 'to':date_to}
-# with_ = {'analytics_data':analytics_data, 'financial_data':financial_data}
-
-# 'Content-Type': 'application/json' - указывать не обязательно,
-# если реквест используется с декодером (request.post(json=dataset))
-# request_body = {'dir':dir_to, 'filter':filter_, 'limit':limit, 'offset':offset,\
-#                    'translit':translit, 'with':with_}
-# request_body = {}
-
-# response = requests.post(api_domain + api_url + 'retaildemand', headers=headers, json=request_body)
-# data = response.json()
-# print(response.status_code)
-
-# print(data)
