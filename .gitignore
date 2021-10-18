@@ -4,11 +4,11 @@ __pycache__/
 *$py.class
 
 # API keys, meta, data and other secret info
-api-keys
-/data/moysklad_retail_shifts_list.json
+/api-keys/api-keys.json
+/api-keys/moysklad_ids.json
+/data/moysklad_retail_shift.json
 /data/ozon_orders.json
-# meta/ # - not used
-/temporary_garbage/
+temporary_garbage
 
 # C extensions
 *.so
