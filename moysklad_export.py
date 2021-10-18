@@ -45,25 +45,27 @@ def moysklad_retail_demand_search(ozon_retail_demand_name):
 
 # TODO 1: Создать класс moysklad_retailShifts-open
 # TODO 2: Использовать получение данных о существующих сменах с использования этого класса, вместо данных из файла
-with open('data/moysklad_retail_shifts_list.json') as f:                       # Файл с открытыми сменами МойСклад
+with open('data/moysklad_retail_shift.json') as f:                       # Файл с открытыми сменами МойСклад
     moysklad_retailShifts = json.load(f)
 
 # Получаем дату создания и ID последней существующей смены
 # TODO 1 Проверить в каком порядке смены выгружаются в список. Если каждая новая встает в начало списка, а старые
 # todo смещаются назад, то необходимо брать в работу индекс [0]. В противном случае - [-1]
 # TODO 2 Если список смен пустой - необходимо создать новую смену
-retailShift_create_date = moysklad_retailShifts['retailShifts'][0]['created']     # ДатаВремя создания смены в МойСклад
-retailShift_create_id = moysklad_retailShifts['retailShifts'][0]['id']            # ID смены в МойСклад
-retailShift_close_date = moysklad_retailShifts['retailShifts'][0]['closed']        # Дата закрытия смены.
+# retailShift_create_date = moysklad_retailShifts['retailShifts'][0]['created']    # ДатаВремя создания смены в МойСклад
+# retailShift_create_id = moysklad_retailShifts['retailShifts'][0]['id']           # ID смены в МойСклад
+# retailShift_close_date = moysklad_retailShifts['retailShifts'][0]['closed']      # Дата закрытия смены.
+retailShift_create_date = moysklad_retailShifts['created']     # ДатаВремя создания смены в МойСклад
+retailShift_create_id = moysklad_retailShifts['id']            # ID смены в МойСклад
 
 # если Дата смены == True, т.е. принимает значение - необходимо открыть новую смену, т.к. она уже закрыта
 # если Дата закрытия смены == False (фактически == 0), занчит смена еще открыта и можно данные выгружать в нее
-if retailShift_close_date:
-    # TODO moysklad_retail_shifts.create()
-    print("Необходимо создать новую смену")
-else:
-    # TODO moysklad_retail_shifts.open()
-    print("Старая смена еще открыта, выгружаем в нее.")
+# if retailShift_close_date:
+#     # TODO moysklad_retail_shifts.create()
+#     print("Необходимо создать новую смену")
+# else:
+#     # TODO moysklad_retail_shifts.open()
+#     print("Старая смена еще открыта, выгружаем в нее.")
 # в данные момент смены закрываются и открываются полностью под управлением скрипта moysklad_retail_shifts.py.
 # возможно этого и достаточно
 
