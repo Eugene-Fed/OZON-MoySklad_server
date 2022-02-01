@@ -69,7 +69,7 @@ retailShift_create_id = moysklad_retailShifts['id']            # ID смены �
 # в данные момент смены закрываются и открываются полностью под управлением скрипта moysklad_retail_shifts.py.
 # возможно этого и достаточно
 
-print('Список открытых смен:')
+print('List of open shifts:')
 print(json.dumps(moysklad_retailShifts, indent=2, ensure_ascii=False))
 
 with open('data/ozon_orders.json') as f:                        # Открываем файл с заказами ОЗОН за все время
@@ -93,10 +93,10 @@ retailDemands_count = 0                                 # Количество �
 for order in ozon_orders['result']:
 
     if moysklad_retail_demand_search(order['order_number']):    # проверяем была ли выгрузка этого заказа в МойСклад
-        print("Заказ № {} был выгружен ранее".format(order['order_number']))
+        print("Order # {} was uploaded earlier".format(order['order_number']))
         continue
 
-    print("Заказ № {} будет выгружен в активную смену".format(order['order_number']))
+    print("Order # {} will be uploaded on the active shift".format(order['order_number']))
     with open('scheme/templates/retailDemand_create.json') as f:  # Файл с шаблоном заказа для выгрузки в МойСклад
         moysklad_retailDemand = json.load(f)
     moysklad_retailDemand['retailShift']['meta']['href'] = api_domain + api_url + api_name_retailShift + '/' +\
@@ -147,12 +147,14 @@ for order in ozon_orders['result']:
 
     response_retailDemand = requests.post(api_domain + api_url + api_name_retailDemand, headers=headers,
                                     json=moysklad_retailDemand)
-    print("Статус создания Розничной Продажи: " + str(response_retailDemand.status_code))
+    print("Retail Creation Status: " + str(response_retailDemand.status_code))
     # print('Ответ сервера МойСклад:')
     # print(json.dumps(response_retailDemand.json(), indent=2, ensure_ascii=False))
     retailDemands_count += 1    # Если выгрузка прошла успешно - суммируем ее к общему количеству
 
-print('Всего заказов загружено: {}, из них выгружено в МойСклад: {}'.format(retailDemands_total, retailDemands_count))
+print('Total orders loaded: {}, of them uploaded to MoyStore: {}'.format(retailDemands_total, retailDemands_count))
+# time.sleep(10)
+wait = input("Press Enter to exit")
 
 # МойСклад не принимает формат ДатаВремя с конечным Z, поэтому убираем его перед отправкой запроса
 # Надо иметь ввиду, что в МойСклад нельзя отправит заказ с датой раньше, чем дата открытия смены,
