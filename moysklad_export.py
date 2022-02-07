@@ -69,8 +69,8 @@ retailShift_create_id = moysklad_retailShifts['id']            # ID смены �
 # в данные момент смены закрываются и открываются полностью под управлением скрипта moysklad_retail_shifts.py.
 # возможно этого и достаточно
 
-print('Список открытых смен:')
-print(json.dumps(moysklad_retailShifts, indent=2, ensure_ascii=False))
+# print('Retail shifts list:')
+# print(json.dumps(moysklad_retailShifts, indent=2, ensure_ascii=False))
 
 with open('data/ozon_orders.json') as f:                        # Открываем файл с заказами ОЗОН за все время
     ozon_orders = json.load(f)
@@ -153,6 +153,7 @@ for order in ozon_orders['result']:
     retailDemands_count += 1    # Если выгрузка прошла успешно - суммируем ее к общему количеству
 
 print('Total orders loaded: {}, of which uploaded to MySklad: {}'.format(retailDemands_total, retailDemands_count))
+wait = input("PRESS ENTER TO CONTINUE.")
 
 # МойСклад не принимает формат ДатаВремя с конечным Z, поэтому убираем его перед отправкой запроса
 # Надо иметь ввиду, что в МойСклад нельзя отправит заказ с датой раньше, чем дата открытия смены,
