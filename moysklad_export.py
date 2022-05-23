@@ -16,14 +16,21 @@ headers = {'Authorization': 'Bearer ' + api_key}
 
 # Для сопоставления артикула товара ОЗОН с кодом товара в МойСклад необходимо использовать таблицу соответствий
 with open('data/product-id_corr-table.json') as f:
-    product_id_table = json.load(f)['ozon-to-moysklad']     # Таблица соответствия артикула ОЗОН с кодом товара МС
+    try:
+        product_id_table = json.load(f)['ozon-to-moysklad']     # Таблица соответствия артикула ОЗОН с кодом товара МС
+    except Exception:
+        wait = input('Ошибка СИНТАКСИСА в таблице "data/product_id-corr_table.json". Невозможно прочитать JSON')
 
 
 # Функция для определения meta-идентификатора товара в МойСклад по его артикулу из ОЗОН
 # TODO Использовать файл data/product_id-corr_table.json для того, чтобы заменить Код товара МойСклад на артикулы ОЗОН,
 #   в случае, если эти артикулы соответствуют ШК Вайлдберриз
 def ozon_moysklad_id_converter(ozon_product_code):
-    moysklad_product_code = product_id_table[ozon_product_code]     # сопоставляем код МойСклад с артикулом ОЗОН
+    try:
+        moysklad_product_code = product_id_table[ozon_product_code]     # сопоставляем код МойСклад с артикулом ОЗОН
+    except Exception:
+        wait = input('Ошибка в таблице "data/product_id-corr_table.json". Отсутствует необходимый ID OZON')
+
     response_product = requests.get(api_domain + api_url + api_name_product, headers=headers,
                                     params='filter=code=' + moysklad_product_code)
     # print("Статус запроса данных Товара: " + str(response_product.status_code))
