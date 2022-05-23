@@ -16,14 +16,21 @@ headers = {'Authorization': 'Bearer ' + api_key}
 
 # Для сопоставления артикула товара ОЗОН с кодом товара в МойСклад необходимо использовать таблицу соответствий
 with open('data/product-id_corr-table.json') as f:
-    product_id_table = json.load(f)['ozon-to-moysklad']     # Таблица соответствия артикула ОЗОН с кодом товара МС
+    try:
+        product_id_table = json.load(f)['ozon-to-moysklad']     # Таблица соответствия артикула ОЗОН с кодом товара МС
+    except Exception:
+        wait = input('Ошибка СИНТАКСИСА в таблице "data/product_id-corr_table.json". Невозможно прочитать JSON')
 
 
 # Функция для определения meta-идентификатора товара в МойСклад по его артикулу из ОЗОН
 # TODO Использовать файл data/product_id-corr_table.json для того, чтобы заменить Код товара МойСклад на артикулы ОЗОН,
 #   в случае, если эти артикулы соответствуют ШК Вайлдберриз
 def ozon_moysklad_id_converter(ozon_product_code):
-    moysklad_product_code = product_id_table[ozon_product_code]     # сопоставляем код МойСклад с артикулом ОЗОН
+    try:
+        moysklad_product_code = product_id_table[ozon_product_code]     # сопоставляем код МойСклад с артикулом ОЗОН
+    except Exception:
+        wait = input('Ошибка в таблице "data/product_id-corr_table.json". Отсутствует необходимый ID OZON')
+
     response_product = requests.get(api_domain + api_url + api_name_product, headers=headers,
                                     params='filter=code=' + moysklad_product_code)
     # print("Статус запроса данных Товара: " + str(response_product.status_code))
@@ -69,8 +76,8 @@ retailShift_create_id = moysklad_retailShifts['id']            # ID смены �
 # в данные момент смены закрываются и открываются полностью под управлением скрипта moysklad_retail_shifts.py.
 # возможно этого и достаточно
 
-print('List of open shifts:')
-print(json.dumps(moysklad_retailShifts, indent=2, ensure_ascii=False))
+# print('Retail shifts list:')
+# print(json.dumps(moysklad_retailShifts, indent=2, ensure_ascii=False))
 
 with open('data/ozon_orders.json') as f:                        # Открываем файл с заказами ОЗОН за все время
     ozon_orders = json.load(f)
@@ -93,7 +100,7 @@ retailDemands_count = 0                                 # Количество �
 for order in ozon_orders['result']:
 
     if moysklad_retail_demand_search(order['order_number']):    # проверяем была ли выгрузка этого заказа в МойСклад
-        print("Order # {} was uploaded earlier".format(order['order_number']))
+        print("Order # {} has been uploaded before".format(order['order_number']))
         continue
 
     print("Order # {} will be uploaded on the active shift".format(order['order_number']))
@@ -152,9 +159,8 @@ for order in ozon_orders['result']:
     # print(json.dumps(response_retailDemand.json(), indent=2, ensure_ascii=False))
     retailDemands_count += 1    # Если выгрузка прошла успешно - суммируем ее к общему количеству
 
-print('Total orders loaded: {}, of them uploaded to MoyStore: {}'.format(retailDemands_total, retailDemands_count))
-# time.sleep(10)
-wait = input("Press Enter to exit")
+print('Total orders loaded: {}, of which uploaded to MySklad: {}'.format(retailDemands_total, retailDemands_count))
+wait = input("PRESS ENTER TO CONTINUE.")
 
 # МойСклад не принимает формат ДатаВремя с конечным Z, поэтому убираем его перед отправкой запроса
 # Надо иметь ввиду, что в МойСклад нельзя отправит заказ с датой раньше, чем дата открытия смены,

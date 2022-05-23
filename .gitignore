@@ -8,6 +8,7 @@ __pycache__/
 /api-keys/moysklad_ids.json
 /data/moysklad_retail_shift.json
 /data/ozon_orders.json
+/data/product-id_corr-table.json
 temporary_garbage
 
 # C extensions

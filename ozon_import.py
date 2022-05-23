@@ -44,15 +44,16 @@ request_body = {'dir': dir_to, 'filter': filter_, 'limit': limit, 'offset': offs
 
 # Отправляем запрос к API ОЗОН для получения списка заказов за указанный ранее период
 response_orders = requests.post(api_domain + api_url, headers=headers, json=request_body)
-print('Статус запроса: ' + str(response_orders.status_code))                # Статус ответа сервера - вывод в консоль
+print('OZON Order list Request Status: ' + str(response_orders.status_code))                # Статус ответа сервера - вывод в консоль
 
 json_orders = response_orders.json()                                        # Преобразуем ответ сервера в json
 format_data = json.dumps(json_orders, indent=2, ensure_ascii=False)         # Преобразуем json в формат с отступами
 # print(format_data)                                                        # Дебажный коммент
 
-print('\nКоличество заказов: ' + str(len(json_orders['result'])))
+print('\nThe number of orders: ' + str(len(json_orders['result'])))
 
 # TODO заменить использование файла на прямую передачу данных из объекта класса Ozon_Import в скрипт moysklad_export.py
 with open('data/ozon_orders.json', 'w') as outfile:  # Проверка наличия файла не требуется, т.к. 'w' создает файл
     json.dump(json_orders, outfile, indent=4, ensure_ascii=False)
-    print(format_data)
+    # print(format_data)
+
