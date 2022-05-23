@@ -154,7 +154,7 @@ for order in ozon_orders['result']:
 
     response_retailDemand = requests.post(api_domain + api_url + api_name_retailDemand, headers=headers,
                                     json=moysklad_retailDemand)
-    print("Статус создания Розничной Продажи: " + str(response_retailDemand.status_code))
+    print("Retail Creation Status: " + str(response_retailDemand.status_code))
     # print('Ответ сервера МойСклад:')
     # print(json.dumps(response_retailDemand.json(), indent=2, ensure_ascii=False))
     retailDemands_count += 1    # Если выгрузка прошла успешно - суммируем ее к общему количеству
