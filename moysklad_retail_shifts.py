@@ -93,7 +93,7 @@ def open_retail_shifts(close_shifts=True):     # Если True - запуска�
     # Получаем список открытых розничных смен
     response_retail_shift = requests.get(api_com_retailShift, headers=headers)
     retail_shifts_list = response_retail_shift.json()['rows']
-    print("MoySklad shift list Request Status: " + str(response_retail_shift.status_code))  # Вывод статуса запроса
+    # print("MoySklad shift list Request Status: " + str(response_retail_shift.status_code))  # Вывод статуса запроса
     # print(json.dumps(retail_shifts_list, indent=4, ensure_ascii=False))
 
     if len(retail_shifts_list) == 0:    # Если в МойСклад нет открытых смен - возвращаемся в функцию создания смены
