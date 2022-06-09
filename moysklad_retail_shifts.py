@@ -93,7 +93,7 @@ def open_retail_shifts(close_shifts=True):     # Если True - запуска�
     # Получаем список открытых розничных смен
     response_retail_shift = requests.get(api_com_retailShift, headers=headers)
     retail_shifts_list = response_retail_shift.json()['rows']
-    # print("MoySklad shift list Request Status: " + str(response_retail_shift.status_code))  # Вывод статуса запроса
+    print("MoySklad shift list Request Status: " + str(response_retail_shift.status_code))  # Вывод статуса запроса
     # print(json.dumps(retail_shifts_list, indent=4, ensure_ascii=False))
 
     if len(retail_shifts_list) == 0:    # Если в МойСклад нет открытых смен - возвращаемся в функцию создания смены
@@ -145,7 +145,7 @@ def close_retail_shift(retail_shift_id, create_date):
     increase_date = datetime.strptime(create_date, "%Y-%m-%d %H:%M:%S.%f")  # из строки в Дата/Время
     increase_date += increase_time  # прибавляем к дате/времени создания смены длит. смены и получаем дату закрытия
     close_date = datetime.strftime(increase_date, "%Y-%m-%d %H:%M:%S")      # из Дата/Время в строку
-    print('Закрываем открытую смену {} с датой {}'.format(retail_shift_id, close_date))
+    # print('Закрываем открытую смену {} с датой {}'.format(retail_shift_id, close_date))
 
     response_body = {"closeDate": close_date}
     response_retail_shift = requests.put(api_com_retailShift + "/" + retail_shift_id, headers=headers,
