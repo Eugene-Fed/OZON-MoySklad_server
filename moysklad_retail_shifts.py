@@ -13,10 +13,10 @@ api_key = api_params['api_key']                                 # Получае
 api_domain = api_params['api_domain']                           # Получаем домен API
 api_url = api_params['api_url']                                 # Получаем основной путь для работы с API
 
-api_name_organization = api_params['organization']['name']      # Имя бъекта, для добавление в URL запроса Организации
-api_name_store = api_params['store']['name']                    # Имя бъекта, для добавление в URL запроса Склада
-api_name_retailStore = api_params['retailStore']['name']        # Имя бъекта, для добавление в URL запроса Точки продаж
-api_name_retailShift = api_params['retailShift']['name']        # Имя бъекта, для добавление в URL запроса Розн. смены
+api_name_organization = api_params['organization']['name']      # Имя объекта, для добавления в URL запроса Организации
+api_name_store = api_params['store']['name']                    # Имя объекта, для добавления в URL запроса Склада
+api_name_retailStore = api_params['retailStore']['name']        # Имя объекта, для добавления в URL запроса Точки продаж
+api_name_retailShift = api_params['retailShift']['name']        # Имя объекта, для добавления в URL запроса Розн. смены
 
 id_organization = api_params['organization']['id']              # Получаем ID Юр. лица
 id_store = api_params['store']['id']                            # Получаем ID Склада
@@ -31,7 +31,7 @@ api_com_retailShift = api_domain + api_url + api_name_retailShift           # Р
 # Формируем заголовок запроса для работы с розничными сменами
 headers = {'Authorization': api_key}                                        # Заголовок запроса
 
-# Проверка наличия файла настроект. Если файл отсутствует - создаем его со значением по-умолчанию
+# Проверка наличия файла настроек. Если файл отсутствует - создаем его со значением по-умолчанию
 # TODO создание файла со значениями по-умолчанию можно вынести в отдельный класс aka отделение настроек от кода
 try:
     with open('settings.json', 'r') as settings_file:
@@ -150,7 +150,7 @@ def close_retail_shift(retail_shift_id, create_date):
     response_body = {"closeDate": close_date}
     response_retail_shift = requests.put(api_com_retailShift + "/" + retail_shift_id, headers=headers,
                                          json=response_body)
-    print("Статус запроса на закрытие смены: " + str(response_retail_shift.status_code))  # Вывод статуса запроса
+    # print("Статус запроса на закрытие смены: " + str(response_retail_shift.status_code))  # Вывод статуса запроса
     # TODO по идее возврат даты закрытия уже без надобности - убрать
     # return close_date   # возвращаем строковую дату закрытия смены
 
