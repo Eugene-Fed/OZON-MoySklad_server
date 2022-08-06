@@ -1,16 +1,25 @@
+# -*- coding: UTF-8 -*-
+
 import requests
 import json
+import sys
 from datetime import datetime, timedelta, date, time
 
-with open('api-keys/api-keys.json') as f:                       # Получаем параметры для отправки запроса на сервер
-    api_params = json.load(f)['api_moysklad']
+try:
+    with open('api-keys/api-keys.json') as f:                       # Получаем параметры для отправки запроса на сервер
+        api_params = json.load(f)['api_moysklad']
+except IOError:
+    print('File "api-keys/api-keys.json" is MISSING.')
+    wait = input("PRESS ENTER TO EXIT.")
+    # raise SystemExit(1)
+    sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
 
-api_key = api_params['api_key']                                 # Получаем ключ API MoySklad
-api_domain = api_params['api_domain']                           # Получаем домен API
-api_url = api_params['api_url']                                 # Получаем основной путь для работы с API
-api_name_product = api_params['product']['name']                # Имя бъекта, для добавление в URL запроса Товара
-api_name_retailShift = api_params['retailShift']['name']        # Имя бъекта, для добавление в URL запроса Розн. смены
-api_name_retailDemand = api_params['retailDemand']['name']      # Имя бъекта, для добавление в URL запроса Розн. продажи
+api_key = api_params['api_key']                                # Получаем ключ API MoySklad
+api_domain = api_params['api_domain']                          # Получаем домен API
+api_url = api_params['api_url']                                # Получаем основной путь для работы с API
+api_name_product = api_params['product']['name']               # Имя объекта, для добавление в URL запроса Товара
+api_name_retailShift = api_params['retailShift']['name']       # Имя объекта, для добавление в URL запроса Розн. смены
+api_name_retailDemand = api_params['retailDemand']['name']     # Имя объекта, для добавление в URL запроса Розн. продажи
 
 headers = {'Authorization': 'Bearer ' + api_key}
 
@@ -19,7 +28,9 @@ with open('data/product-id_corr-table.json') as f:
     try:
         product_id_table = json.load(f)['ozon-to-moysklad']     # Таблица соответствия артикула ОЗОН с кодом товара МС
     except Exception:
-        wait = input('Ошибка СИНТАКСИСА в таблице "data/product_id-corr_table.json". Невозможно прочитать JSON')
+        wait = input('Ошибка СИНТАКСИСА в таблице "data/product_id-corr_table.json". Невозможно прочитать JSON'
+                     '\nPress ENTER to exit.')
+        sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
 
 
 # Функция для определения meta-идентификатора товара в МойСклад по его артикулу из ОЗОН
@@ -30,17 +41,29 @@ def ozon_moysklad_id_converter(ozon_product_code):
         moysklad_product_code = product_id_table[ozon_product_code]     # сопоставляем код МойСклад с артикулом ОЗОН
     except Exception:
         wait = input('Ошибка в таблице "data/product_id-corr_table.json". Отсутствует необходимый ID OZON')
+        sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
 
-    response_product = requests.get(api_domain + api_url + api_name_product, headers=headers,
+    try:
+        print('MoySklad product: Start get request ')
+        response_product = requests.get(api_domain + api_url + api_name_product, headers=headers,
                                     params='filter=code=' + moysklad_product_code)
-    # print("Статус запроса данных Товара: " + str(response_product.status_code))
+    except Exception:
+        print("Get MoySklad product request Status: " + str(response_product.status_code))  # Вывод статуса запроса
+        wait = input("PRESS ENTER TO EXIT.")
+        sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
     return response_product.json()['rows'][0]['id']     # Получаем ID варианта товара
 
 
 # Метод для определения, была ли это продажа выгружена в МойСклад ранее. Не выгружать, если данные о продаже уже есть.
 def moysklad_retail_demand_search(ozon_retail_demand_name):
-    response_ozon_retail_demand = requests.get(api_domain + api_url + api_name_retailDemand, headers=headers,
-                                         params='filter=name='+ozon_retail_demand_name)
+    try:
+        print('MoySklad retail search: Start request.')
+        response_ozon_retail_demand = requests.get(api_domain + api_url + api_name_retailDemand, headers=headers,
+                                             params='filter=name='+ozon_retail_demand_name)
+    except Exception:
+        print("Get MoySklad product request Status: " + str(response_ozon_retail_demand.status_code))  # Вывод статуса
+        wait = input("PRESS ENTER TO EXIT.")
+        sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
     # print("Статус запроса наличия Продажи: " + str(response_ozon_retail_demand.status_code))
     # print(json.dumps(response_ozon_retail_demand.json(), indent=2, ensure_ascii=False))
     # Если размер параметра /meta/size = 1, значит такое имя продажи в МойСклад уже встречается,
@@ -52,8 +75,13 @@ def moysklad_retail_demand_search(ozon_retail_demand_name):
 
 # TODO 1: Создать класс moysklad_retailShifts-open
 # TODO 2: Использовать получение данных о существующих сменах с использования этого класса, вместо данных из файла
-with open('data/moysklad_retail_shift.json') as f:                       # Файл с открытыми сменами МойСклад
-    moysklad_retailShifts = json.load(f)
+try:
+    with open('data/moysklad_retail_shift.json') as f:                       # Файл с открытыми сменами МойСклад
+        moysklad_retailShifts = json.load(f)
+except IOError:
+    print('File "data/moysklad_retail_shift.json" is MISSING.')
+    wait = input("PRESS ENTER TO EXIT.")
+    sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
 
 # Получаем дату создания и ID последней существующей смены
 # TODO 1 Проверить в каком порядке смены выгружаются в список. Если каждая новая встает в начало списка, а старые
@@ -79,8 +107,13 @@ retailShift_create_id = moysklad_retailShifts['id']            # ID смены �
 # print('Retail shifts list:')
 # print(json.dumps(moysklad_retailShifts, indent=2, ensure_ascii=False))
 
-with open('data/ozon_orders.json') as f:                        # Открываем файл с заказами ОЗОН за все время
-    ozon_orders = json.load(f)
+try:
+    with open('data/ozon_orders.json') as f:                        # Открываем файл с заказами ОЗОН за все время
+        ozon_orders = json.load(f)
+except IOError:
+    print('File "data/ozon_orders.json" is MISSING.')
+    wait = input("PRESS ENTER TO EXIT.")
+    sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
 
 # Создаем переменную формата ДатаВремя со значением 1 минута для того, чтобы в цикле выгрузки заказов озон
 # в смену МойСклад, каждый следующий заказ приходил на 1 минуту позже, чем предыдущий, начиная с момента открытия смены
@@ -104,8 +137,13 @@ for order in ozon_orders['result']:
         continue
 
     print("Order # {} will be uploaded on the active shift".format(order['order_number']))
-    with open('scheme/templates/retailDemand_create.json') as f:  # Файл с шаблоном заказа для выгрузки в МойСклад
-        moysklad_retailDemand = json.load(f)
+    try:
+        with open('scheme/templates/retailDemand_create.json') as f:  # Файл с шаблоном заказа для выгрузки в МойСклад
+            moysklad_retailDemand = json.load(f)
+    except IOError:
+        print('File "scheme/templates/retailDemand_create.json" is MISSING.')
+        wait = input("PRESS ENTER TO EXIT.")
+        sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
     moysklad_retailDemand['retailShift']['meta']['href'] = api_domain + api_url + api_name_retailShift + '/' +\
                                                            retailShift_create_id
 
@@ -152,9 +190,13 @@ for order in ozon_orders['result']:
     moysklad_retailDemand['payedSum'] = moysklad_retailDemand['sum']  # Пока не разобрался для чего поле, поэтому так
     # print(json.dumps(moysklad_retailDemand, indent=2, ensure_ascii=False))
 
-    response_retailDemand = requests.post(api_domain + api_url + api_name_retailDemand, headers=headers,
-                                    json=moysklad_retailDemand)
-    print("Retail Creation Status: " + str(response_retailDemand.status_code))
+    try:
+        response_retailDemand = requests.post(api_domain + api_url + api_name_retailDemand, headers=headers,
+                                        json=moysklad_retailDemand)
+    except Exception:
+        print("Retail Demand Post Status: " + str(response_retailDemand.status_code))
+        wait = input("PRESS ENTER TO EXIT.")
+        sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
     # print('Ответ сервера МойСклад:')
     # print(json.dumps(response_retailDemand.json(), indent=2, ensure_ascii=False))
     retailDemands_count += 1    # Если выгрузка прошла успешно - суммируем ее к общему количеству
