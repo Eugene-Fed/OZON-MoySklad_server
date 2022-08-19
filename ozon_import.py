@@ -1,10 +1,19 @@
+# -*- coding: UTF-8 -*-
+
 import requests
+import sys
 import json
 import datetime
 from datetime import timedelta
 
-with open('api-keys/api-keys.json') as f:
-    api_params = json.load(f)['api_ozon']   # выбираем только данные объекта api_ozon
+try:
+    with open('api-keys/api-keys.json') as f:
+        api_params = json.load(f)['api_ozon']   # выбираем только данные объекта api_ozon
+except IOError:
+    print('File "api-keys/api-keys.json" is MISSING.')
+    wait = input("PRESS ENTER TO EXIT.")
+    # raise SystemExit(1)
+    sys.exit(1) #TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
 
 # Параметры, необходимые для запроса к серверу API
 client_id = api_params['client_id']
@@ -15,11 +24,16 @@ api_url = api_params['api_url']
 # Начальная и конечная дата для выгрузки заказов. Текст формата '2021-07-13T00:00:00Z'
 # Z на конце = UTC+0 для того, чтобы смена открывалась в 3 ночи по МСК
 # Смена начинается и заканчивается в 00:00 для того, чтобы избежать потери заказов между 23:59 и 00:00
-with open('settings.json', 'r') as settings_file:  # Если файл отсутствует, то он будет создан предыдущим скриптом
-    # Количество дней от текущего для расчета диапазона загрузки заказов
-    settings_json = json.load(settings_file)
-    days_to_download_orders = timedelta(days=settings_json['days_to_download_orders'])
-    day_start_time = settings_json['day_start_time']
+try:
+    with open('settings.json', 'r') as settings_file:  # Если файл отсутствует, то он будет создан предыдущим скриптом
+        # Количество дней от текущего для расчета диапазона загрузки заказов
+        settings_json = json.load(settings_file)
+        days_to_download_orders = timedelta(days=settings_json['days_to_download_orders'])
+        day_start_time = settings_json['day_start_time']
+except IOError:
+    print('File "settings.json" is MISSING.')
+    wait = input("PRESS ENTER TO EXIT.")
+    sys.exit(1) #TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
 
 date_today = datetime.date.today().strftime("%Y-%m-%d")     # Получаем текущую дату и преобразуем в текст понятный API
 date_start_day = datetime.date.today() - days_to_download_orders  # Получаем дату за N дней до сегодняшней
@@ -35,7 +49,7 @@ translit = True                     # True, если включена транс
 analytics_data = False              # Не включать данные аналитики в ответ
 financial_data = False               # Включить финансовые данные в ответ, чтобы посчитать общую комиссию с продажи
 
-filter_ = {'since': date_from, 'status': status, 'to': date_to}     # Фильтр для поиска отправленийпо параметрам
+filter_ = {'since': date_from, 'status': status, 'to': date_to}     # Фильтр для поиска отправлений по параметрам
 with_ = {'analytics_data': analytics_data, 'financial_data': financial_data}    # Доп. поля, для добавления в ответ
 
 # Формируем заголовок и тело запроса к серверу
@@ -43,8 +57,14 @@ headers = {'Client-Id': client_id, 'Api-Key': api_key}
 request_body = {'dir': dir_to, 'filter': filter_, 'limit': limit, 'offset': offset, 'translit': translit, 'with': with_}
 
 # Отправляем запрос к API ОЗОН для получения списка заказов за указанный ранее период
-response_orders = requests.post(api_domain + api_url, headers=headers, json=request_body)
-print('OZON Order list Request Status: ' + str(response_orders.status_code))                # Статус ответа сервера - вывод в консоль
+try:
+    print('OZON Order list: Start request')
+    response_orders = requests.post(api_domain + api_url, headers=headers, json=request_body)
+except Exception:
+    print("Create shift request Status: " + str(response_orders.status_code))  # Вывод статуса запроса
+    wait = input("PRESS ENTER TO EXIT.")
+    sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
+
 
 json_orders = response_orders.json()                                        # Преобразуем ответ сервера в json
 format_data = json.dumps(json_orders, indent=2, ensure_ascii=False)         # Преобразуем json в формат с отступами
