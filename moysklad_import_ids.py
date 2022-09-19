@@ -1,3 +1,5 @@
+# -*- coding: UTF-8 -*-
+
 import requests
 import json
 
@@ -45,3 +47,9 @@ with open('api-keys/moysklad_ids.json', 'w') as outfile:  # Запись в фа
     json.dump(moySklad_ids, outfile, indent=4, ensure_ascii=False)
     print('\n ### Содержимое moysklad_ids.json ###')
     print(json.dumps(moySklad_ids, indent=4, ensure_ascii=False))
+
+
+def import_ids():
+    pass
+
+

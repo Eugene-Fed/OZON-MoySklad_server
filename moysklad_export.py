@@ -204,6 +204,11 @@ for order in ozon_orders['result']:
 print('Total orders loaded: {}, of which uploaded to MySklad: {}'.format(retailDemands_total, retailDemands_count))
 wait = input("PRESS ENTER TO CONTINUE.")
 
+
+def export_orders():
+    pass
+
+
 # МойСклад не принимает формат ДатаВремя с конечным Z, поэтому убираем его перед отправкой запроса
 # Надо иметь ввиду, что в МойСклад нельзя отправит заказ с датой раньше, чем дата открытия смены,
 # Как следствие при выгрузке нам практически не пригодится поле с датой оформления заказа из файла выгрузки ОЗОН
