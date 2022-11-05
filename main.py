@@ -14,4 +14,4 @@ if __name__ == "__main__":
     ms_retail.create_retail_shift()
     ozon_import.import_orders()
     moysklad_export.export_orders()
-    wait = input("PRESS ENTER TO CONTINUE.")
+    wait = input("PRESS ENTER TO EXIT.")
