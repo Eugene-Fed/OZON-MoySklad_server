@@ -13,7 +13,7 @@ except IOError:
     print('File "api-keys/api-keys.json" is MISSING.')
     wait = input("PRESS ENTER TO EXIT.")
     # raise SystemExit(1)
-    sys.exit(1) #TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
+    sys.exit(1)
 
 # Параметры, необходимые для запроса к серверу API
 client_id = api_params['client_id']
@@ -33,7 +33,7 @@ try:
 except IOError:
     print('File "settings.json" is MISSING.')
     wait = input("PRESS ENTER TO EXIT.")
-    sys.exit(1) #TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
+    sys.exit(1)
 
 date_today = datetime.date.today().strftime("%Y-%m-%d")     # Получаем текущую дату и преобразуем в текст понятный API
 date_start_day = datetime.date.today() - days_to_download_orders  # Получаем дату за N дней до сегодняшней
@@ -63,7 +63,7 @@ try:
 except Exception:
     print("Create shift request Status: " + str(response_orders.status_code))  # Вывод статуса запроса
     wait = input("PRESS ENTER TO EXIT.")
-    sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
+    sys.exit(1)
 
 
 json_orders = response_orders.json()                                        # Преобразуем ответ сервера в json
@@ -76,4 +76,9 @@ print('\nThe number of orders: ' + str(len(json_orders['result'])))
 with open('data/ozon_orders.json', 'w') as outfile:  # Проверка наличия файла не требуется, т.к. 'w' создает файл
     json.dump(json_orders, outfile, indent=4, ensure_ascii=False)
     # print(format_data)
+
+
+def import_orders():
+    pass
+
 

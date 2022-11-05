@@ -182,4 +182,5 @@ def export_retail_shifts(retail_shifts):
 
 
 # open_retail_shifts()    # открываем список смен, проверяем есть ли среди них открытые и зарывае их
-create_retail_shift()   # создаем новую смену
+if __name__ == "__main__":
+    create_retail_shift()   # создаем новую смену
