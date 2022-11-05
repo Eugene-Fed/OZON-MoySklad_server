@@ -4,6 +4,7 @@ import requests
 import sys
 import json
 import datetime
+import exception_handler as ex
 from datetime import timedelta
 
 try:
@@ -14,6 +15,8 @@ except IOError:
     wait = input("PRESS ENTER TO EXIT.")
     # raise SystemExit(1)
     sys.exit(1)
+except Exception as e:
+    ex.unexpected(e)
 
 # Параметры, необходимые для запроса к серверу API
 client_id = api_params['client_id']
@@ -34,6 +37,8 @@ except IOError:
     print('File "settings.json" is MISSING.')
     wait = input("PRESS ENTER TO EXIT.")
     sys.exit(1)
+except Exception as e:
+    ex.unexpected(e)
 
 date_today = datetime.date.today().strftime("%Y-%m-%d")     # Получаем текущую дату и преобразуем в текст понятный API
 date_start_day = datetime.date.today() - days_to_download_orders  # Получаем дату за N дней до сегодняшней
@@ -60,10 +65,8 @@ request_body = {'dir': dir_to, 'filter': filter_, 'limit': limit, 'offset': offs
 try:
     print('OZON Order list: Start request')
     response_orders = requests.post(api_domain + api_url, headers=headers, json=request_body)
-except Exception:
-    print("Create shift request Status: " + str(response_orders.status_code))  # Вывод статуса запроса
-    wait = input("PRESS ENTER TO EXIT.")
-    sys.exit(1)
+except Exception as e:
+    ex.unexpected(e)
 
 
 json_orders = response_orders.json()                                        # Преобразуем ответ сервера в json
@@ -82,3 +85,7 @@ def import_orders():
     pass
 
 
+if __name__ == "__main__":
+    import_orders()   # создаем новую смену
+else:
+    pass

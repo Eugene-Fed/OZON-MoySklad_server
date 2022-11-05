@@ -3,6 +3,7 @@
 import requests
 import json
 import sys
+import exception_handler as ex
 from datetime import datetime, timedelta, date, time
 
 try:
@@ -14,10 +15,7 @@ except IOError:
     # raise SystemExit(1)
     sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
 except Exception as e:
-    print("\nUnexpected error:\n", e)
-    print(e)
-    wait = input("PRESS ENTER TO EXIT.")
-    sys.exit(1)
+    ex.unexpected(e)
 
 api_key = api_params['api_key']                                # Получаем ключ API MoySklad
 api_domain = api_params['api_domain']                          # Получаем домен API
@@ -56,15 +54,19 @@ def ozon_moysklad_id_converter(ozon_product_code):
         response_product = requests.get(api_domain + api_url + api_name_product, headers=headers,
                                     params='filter=code=' + moysklad_product_code)
     except Exception as e:
-        print(e)
-        print("Get MoySklad product request Status: " + str(response_product.status_code))  # Вывод статуса запроса
-        wait = input("PRESS ENTER TO EXIT.")
-        sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
+        ex.unexpected(e)
     return response_product.json()['rows'][0]['id']     # Получаем ID варианта товара
 
 
 # Метод для определения, была ли это продажа выгружена в МойСклад ранее. Не выгружать, если данные о продаже уже есть.
-def moysklad_retail_demand_search(ozon_retail_demand_name):
+def moysklad_retail_demand_search(ozon_retail_demand_name: str):
+    """
+    :param ozon_retail_demand_name: str - идентификатор продажи в ОЗОН
+    :return: Bool
+    В ответе Склада мы проверяем параметр /meta/size. Если он = 1, значит такое имя продажи в МойСклад уже встречается,
+    в противном случае - это новая продажа. Можно конечно возвращать само значение размера, т.к. 0 == False, 1 == True,
+    но с дополнительной переменной читаемость кода выше
+    """
     is_uploaded = True
     try:
         print('MoySklad retail search: Start request.')
@@ -73,15 +75,12 @@ def moysklad_retail_demand_search(ozon_retail_demand_name):
         is_uploaded = True if response_ozon_retail_demand.json()['meta']['size'] > 0 else False
     except Exception as e:
         # Если получаем ошибку сети во время попытки найти заказ на Моем Складе - тогда просто его пропускаем
-        print("\nA request to MySklad to search for a sale by ID returned with an error.")
+        print("\nThe request to MySklad to search for a sale by ID returned with an error.")
         print(e)                              # Выводим подробности ошибки
-        # wait = input("PRESS ENTER TO CONTINUE.")
-        # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
+
     # print("Статус запроса наличия Продажи: " + str(response_ozon_retail_demand.status_code))
     # print(json.dumps(response_ozon_retail_demand.json(), indent=2, ensure_ascii=False))
-    # Если размер параметра /meta/size = 1, значит такое имя продажи в МойСклад уже встречается,
-    # в противном случае - это новая продажа. Можно конечно возвращать само значение размера, т.к. 0=False, 1=True,
-    # но с дополнительной переменной читаемость кода выше
+
     return is_uploaded
 
 
@@ -95,9 +94,7 @@ except IOError:
     wait = input("PRESS ENTER TO EXIT.")
     sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
 except Exception as e:
-    print("Unexpected Error:\n", e)
-    wait = input("PRESS ENTER TO EXIT.")
-    sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
+    ex.unexpected(e)
 
 # Получаем дату создания и ID последней существующей смены
 # TODO 1 Проверить в каком порядке смены выгружаются в список. Если каждая новая встает в начало списка, а старые
@@ -131,9 +128,7 @@ except IOError:
     wait = input("PRESS ENTER TO EXIT.")
     sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
 except Exception as e:
-    print(e)
-    wait = input("PRESS ENTER TO EXIT.")
-    sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
+    ex.unexpected(e)
 
 # Создаем переменную формата ДатаВремя со значением 1 минута для того, чтобы в цикле выгрузки заказов озон
 # в смену МойСклад, каждый следующий заказ приходил на 1 минуту позже, чем предыдущий, начиная с момента открытия смены
@@ -165,9 +160,7 @@ for order in ozon_orders['result']:
         wait = input("PRESS ENTER TO EXIT.")
         sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
     except Exception as e:
-        print(e)
-        wait = input("PRESS ENTER TO EXIT.")
-        sys.exit(1)
+        ex.unexpected(e)
     moysklad_retailDemand['retailShift']['meta']['href'] = api_domain + api_url + api_name_retailShift + '/' +\
                                                            retailShift_create_id
 
@@ -218,10 +211,7 @@ for order in ozon_orders['result']:
         response_retailDemand = requests.post(api_domain + api_url + api_name_retailDemand, headers=headers,
                                         json=moysklad_retailDemand)
     except Exception as e:
-        print(e)
-        print("\nRetail Demand Post Status: " + str(response_retailDemand.status_code))
-        wait = input("PRESS ENTER TO EXIT.")
-        sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
+        ex.unexpected(e)
     # print('Ответ сервера МойСклад:')
     # print(json.dumps(response_retailDemand.json(), indent=2, ensure_ascii=False))
     retailDemands_count += 1    # Если выгрузка прошла успешно - суммируем ее к общему количеству
@@ -247,3 +237,8 @@ def export_orders():
 
 # utc3 = datetime.time(3, 0, 0)
 # orders_data = datetime.strftime("%Y-%m-%d %H:%M:%S", orders_data)
+
+if __name__ == "__main__":
+    export_orders()   # создаем новую смену
+else:
+    pass

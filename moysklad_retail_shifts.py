@@ -3,6 +3,7 @@
 import requests
 import sys
 import json
+import exception_handler as ex
 from datetime import datetime, timedelta
 
 try:
@@ -14,6 +15,8 @@ except IOError:
     wait = input("PRESS ENTER TO EXIT.")
     # raise SystemExit(1)
     sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
+except Exception as e:
+    ex.unexpected(e)
 
 api_key = api_params['api_key']                                 # Получаем ключ API MoySklad
 api_domain = api_params['api_domain']                           # Получаем домен API
@@ -55,6 +58,8 @@ except IOError:
     with open('settings.json', 'w') as settings_file:
         json.dump(settings_json, settings_file, indent=4, ensure_ascii=False)
     # print("Файл отсутствовал, был создан. Длительность смены равна {}".format(str(increase_time)))
+except Exception as e:
+    ex.unexpected(e)
 
 
 # TODO Закрыть все открытые смены. Открыть новую и выгрузиить только ее данные в файл.
@@ -77,10 +82,8 @@ def create_retail_shift():
     try:
         print('Create retail shift: Start response')
         response_retail_shift = requests.post(api_com_retailShift, headers=headers, json=request_body)
-    except Exception:
-        print("Create shift request Status: " + str(response_retail_shift.status_code))  # Вывод статуса запроса
-        wait = input("PRESS ENTER TO EXIT.")
-        sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
+    except Exception as e:
+        ex.unexpected(e)
 
     # Во второй раз получаем список смен уже с учетом только что открытой - ее нет необходимости закрывать
     # open_retail_shifts(close_shifts=False)  # Еще раз получаем список всех смен, в этот раз не закрывая открытые
@@ -107,10 +110,8 @@ def open_retail_shifts(close_shifts=True):     # Если True - запуска�
     try:
         print('Open retail shifts: Start response')
         response_retail_shift = requests.get(api_com_retailShift, headers=headers)
-    except Exception:
-        print("MoySklad shift list Request Status: " + str(response_retail_shift.status_code))  # Вывод статуса запроса
-        wait = input("PRESS ENTER TO EXIT.")
-        sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
+    except Exception as e:
+        ex.unexpected(e)
 
     retail_shifts_list = response_retail_shift.json()['rows']
     # print(json.dumps(retail_shifts_list, indent=4, ensure_ascii=False))
@@ -181,6 +182,8 @@ def export_retail_shifts(retail_shifts):
         # print(json.dumps(retail_shifts, indent=4, ensure_ascii=False))
 
 
-# open_retail_shifts()    # открываем список смен, проверяем есть ли среди них открытые и зарывае их
+# open_retail_shifts()    # открываем список смен, проверяем есть ли среди них открытые и зарываем их
 if __name__ == "__main__":
     create_retail_shift()   # создаем новую смену
+else:
+    pass
