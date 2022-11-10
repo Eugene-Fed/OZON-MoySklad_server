@@ -42,20 +42,30 @@ with open('data/product-id_corr-table.json') as f:
 #   в случае, если эти артикулы соответствуют ШК Вайлдберриз
 def ozon_moysklad_id_converter(ozon_product_code):
     try:
+        print("Searching for OZON Product code {}".format(ozon_product_code))
         moysklad_product_code = product_id_table[ozon_product_code]     # сопоставляем код МойСклад с артикулом ОЗОН
+        print("MoySklad Product code is: {}".format(moysklad_product_code))
     except Exception as e:
         print(e)
         print('\nОшибка в таблице "data/product_id-corr_table.json". Отсутствует необходимый ID OZON')
         wait = input("PRESS ENTER TO EXIT.")
-        sys.exit(1)  # TODO найти правильный код выхода с ошибкой, вместо стандартного '0'
+        sys.exit(1)
 
     try:
-        print('MoySklad product: Start get request ')
+        print('MoySklad product: Start get request for: {}'.format(moysklad_product_code))
         response_product = requests.get(api_domain + api_url + api_name_product, headers=headers,
                                     params='filter=code=' + moysklad_product_code)
+        if response_product.json()['rows'] == []:   # если у товара нет вариантов размера или цвета
+            return moysklad_product_code            # тогда возвращаем ID самого товара
+        else:
+            return response_product.json()['rows'][0]['id']  # иначе возвращаем ID соответствующего варианта товара
+    except IndexError as e:
+        print("Товар не имеет Вариантов/Торговых предложений. ")
+        wait = input("PRESS ENTER TO EXIT.")
+        sys.exit(1)
     except Exception as e:
+        print(response_product.json())
         ex.unexpected(e)
-    return response_product.json()['rows'][0]['id']     # Получаем ID варианта товара
 
 
 # Метод для определения, была ли это продажа выгружена в МойСклад ранее. Не выгружать, если данные о продаже уже есть.
@@ -176,7 +186,7 @@ for order in ozon_orders['result']:
         # TODO В этом цикле нужно сформировать список всех мета-id товаров в заказе, чтобы далее передать его в заказ
         product_id = ozon_moysklad_id_converter(product['offer_id'])  # получаем id товара МойСклад по Арт. товара ОЗОН
 
-        # Находим общую стоимость заказа как сумму всех тваров в заказе, умноженную на их количество, т.к. ОЗОН
+        # Находим общую стоимость заказа как сумму всех товаров в заказе, умноженную на их количество, т.к. ОЗОН
         # не передает ИТОГ отдельным полем - только по артикульно.
         # moysklad_retailDemand['sum'] += float(product['price']) * int(product['quantity'])
         # product_quantity = int(product['quantity'])  # TODO - временный костыль, разобраться с количеством корректнее

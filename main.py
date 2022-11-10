@@ -8,7 +8,6 @@ import moysklad_export
 FIRST_START = False         # флаг, от которого зависит, будет ли запускаться скрипт для импорта айдишников с МойСклад
 
 if __name__ == "__main__":
-    # TODO: переписать все скрипты в готовые для использования модули и прописать их запуск в main.py
     if FIRST_START:
         ms_import.import_ids()
     ms_retail.create_retail_shift()
