@@ -168,8 +168,13 @@ def close_retail_shift(retail_shift_id, create_date):
     # print('Закрываем открытую смену {} с датой {}'.format(retail_shift_id, close_date))
 
     response_body = {"closeDate": close_date}
-    response_retail_shift = requests.put(api_com_retailShift + "/" + retail_shift_id, headers=headers,
+    try:
+        response_retail_shift = requests.put(api_com_retailShift + "/" + retail_shift_id, headers=headers,
                                          json=response_body)
+    except TimeoutError as te:
+        ex.unexpected(te, er_type="Timeout error")
+    except Exception as e:
+        ex.unexpected(e)
     # print("Статус запроса на закрытие смены: " + str(response_retail_shift.status_code))  # Вывод статуса запроса
     # TODO по идее возврат даты закрытия уже без надобности - убрать
     # return close_date   # возвращаем строковую дату закрытия смены
